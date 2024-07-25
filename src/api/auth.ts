@@ -9,7 +9,7 @@ class AuthAPI {
     formData.append("captchaKey", data.captchaKey);
     formData.append("captchaCode", data.captchaCode);
     return request<any, LoginResult>({
-      url: "/api/v1/auth/login",
+      url: "/api/login",
       method: "post",
       data: formData,
       headers: {
@@ -27,12 +27,12 @@ class AuthAPI {
   }
 
   /** 获取验证码 接口*/
-  static getCaptcha() {
-    return request<any, CaptchaResult>({
-      url: "/api/v1/auth/captcha",
-      method: "get",
-    });
-  }
+  // static getCaptcha() {
+  //   return request<any, CaptchaResult>({
+  //     url: "/api/v1/auth/captcha",
+  //     method: "get",
+  //   });
+  // }
 }
 
 export default AuthAPI;
