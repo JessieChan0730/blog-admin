@@ -3,17 +3,19 @@ import request from "@/utils/request";
 class AuthAPI {
   /** 登录 接口*/
   static login(data: LoginData) {
-    const formData = new FormData();
-    formData.append("username", data.username);
-    formData.append("password", data.password);
-    formData.append("captchaKey", data.captchaKey);
-    formData.append("captchaCode", data.captchaCode);
+    // const formData = new FormData();
+    // formData.append("username", data.username);
+    // formData.append("password", data.password);
+    data = {
+      username: data.username,
+      password: data.password,
+    };
     return request<any, LoginResult>({
       url: "/api/login",
       method: "post",
-      data: formData,
+      data: data,
       headers: {
-        "Content-Type": "multipart/form-data",
+        "Content-Type": "application/json",
       },
     });
   }
@@ -43,20 +45,16 @@ export interface LoginData {
   username: string;
   /** 密码 */
   password: string;
-  /** 验证码缓存key */
-  captchaKey: string;
-  /** 验证码 */
-  captchaCode: string;
 }
 
 /** 登录响应 */
 export interface LoginResult {
   /** 访问token */
-  accessToken?: string;
+  access?: string;
   /** 过期时间(单位：毫秒) */
   expires?: number;
   /** 刷新token */
-  refreshToken?: string;
+  refresh?: string;
   /** token 类型 */
   tokenType?: string;
 }

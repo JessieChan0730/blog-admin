@@ -8,7 +8,7 @@ class UserAPI {
    */
   static getInfo() {
     return request<any, UserInfo>({
-      url: "/api/v1/users/me",
+      url: "/api/user/info/",
       method: "get",
     });
   }

@@ -154,10 +154,8 @@ const isCapslock = ref(false);
 const loginFormRef = ref<FormInstance>();
 
 const loginData = ref<LoginData>({
-  username: "admin",
+  username: "cheng",
   password: "123456",
-  captchaKey: "",
-  captchaCode: "",
 });
 
 const loginRules = computed(() => {
@@ -181,13 +179,6 @@ const loginRules = computed(() => {
         trigger: "blur",
       },
     ],
-    captchaCode: [
-      {
-        required: true,
-        trigger: "blur",
-        message: t("login.message.captchaCode.required"),
-      },
-    ],
   };
 });
 
@@ -201,6 +192,7 @@ const loginRules = computed(() => {
 
 /** 登录表单提交 */
 function handleLoginSubmit() {
+  // 验证表单
   loginFormRef.value?.validate((valid: boolean) => {
     if (valid) {
       loading.value = true;

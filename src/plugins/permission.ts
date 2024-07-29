@@ -23,39 +23,40 @@ export function setupPermission() {
         next({ path: "/" });
         NProgress.done();
       } else {
-        const userStore = useUserStore();
-        const hasRoles =
-          userStore.user.roles && userStore.user.roles.length > 0;
-
-        if (hasRoles) {
-          // 如果未匹配到任何路由，跳转到404页面
-          if (to.matched.length === 0) {
-            next(from.name ? { name: from.name } : "/404");
-          } else {
-            // 如果路由参数中有 title，覆盖路由元信息中的 title
-            const title =
-              (to.params.title as string) || (to.query.title as string);
-            if (title) {
-              to.meta.title = title;
-            }
-            next();
-          }
-        } else {
-          const permissionStore = usePermissionStore();
-          try {
-            await userStore.getUserInfo();
-            const dynamicRoutes = await permissionStore.generateRoutes();
-            dynamicRoutes.forEach((route: RouteRecordRaw) =>
-              router.addRoute(route)
-            );
-            next({ ...to, replace: true });
-          } catch (error) {
-            // 移除 token 并重定向到登录页，携带当前页面路由作为跳转参数
-            await userStore.resetToken();
-            redirectToLogin(to, next);
-            NProgress.done();
-          }
-        }
+        next();
+        // const userStore = useUserStore();
+        // const hasRoles =
+        //   userStore.user.roles && userStore.user.roles.length > 0;
+        //
+        // if (hasRoles) {
+        //   // 如果未匹配到任何路由，跳转到404页面
+        //   if (to.matched.length === 0) {
+        //     next(from.name ? { name: from.name } : "/404");
+        //   } else {
+        //     // 如果路由参数中有 title，覆盖路由元信息中的 title
+        //     const title =
+        //       (to.params.title as string) || (to.query.title as string);
+        //     if (title) {
+        //       to.meta.title = title;
+        //     }
+        //     next();
+        //   }
+        // } else {
+        //   const permissionStore = usePermissionStore();
+        //   try {
+        //     await userStore.getUserInfo();
+        //     const dynamicRoutes = await permissionStore.generateRoutes();
+        //     dynamicRoutes.forEach((route: RouteRecordRaw) =>
+        //       router.addRoute(route)
+        //     );
+        //     next({ ...to, replace: true });
+        //   } catch (error) {
+        //     // 移除 token 并重定向到登录页，携带当前页面路由作为跳转参数
+        //     await userStore.resetToken();
+        //     redirectToLogin(to, next);
+        //     NProgress.done();
+        //   }
+        // }
       }
     } else {
       // 未登录
