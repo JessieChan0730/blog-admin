@@ -23,6 +23,8 @@ export function setupPermission() {
         next({ path: "/" });
         NProgress.done();
       } else {
+        const permissionStore = usePermissionStore();
+        permissionStore.generateStaticRoutes();
         next();
         // const userStore = useUserStore();
         // const hasRoles =

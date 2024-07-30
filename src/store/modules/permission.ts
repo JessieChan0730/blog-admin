@@ -17,6 +17,13 @@ export const usePermissionStore = defineStore("permission", () => {
   const mixLeftMenus = ref<RouteRecordRaw[]>([]);
 
   /**
+   * 生成静态路由
+   */
+  function generateStaticRoutes() {
+    routes.value = constantRoutes;
+  }
+
+  /**
    * 生成动态路由
    */
   function generateRoutes() {
@@ -48,6 +55,7 @@ export const usePermissionStore = defineStore("permission", () => {
   return {
     routes,
     generateRoutes,
+    generateStaticRoutes,
     mixLeftMenus,
     setMixLeftMenus,
   };
