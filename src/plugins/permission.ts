@@ -1,8 +1,4 @@
-import {
-  NavigationGuardNext,
-  RouteLocationNormalized,
-  RouteRecordRaw,
-} from "vue-router";
+import { NavigationGuardNext, RouteLocationNormalized } from "vue-router";
 
 import NProgress from "@/utils/nprogress";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
@@ -12,19 +8,19 @@ import { usePermissionStore, useUserStore } from "@/store";
 export function setupPermission() {
   // 白名单路由
   const whiteList = ["/login"];
+  // 加载网页静态路由
+  const permissionStore = usePermissionStore();
+  permissionStore.generateStaticRoutes();
 
   router.beforeEach(async (to, from, next) => {
     NProgress.start();
     const hasToken = localStorage.getItem(TOKEN_KEY);
-
     if (hasToken) {
       if (to.path === "/login") {
         // 如果已登录，跳转到首页
         next({ path: "/" });
         NProgress.done();
       } else {
-        const permissionStore = usePermissionStore();
-        permissionStore.generateStaticRoutes();
         next();
         // const userStore = useUserStore();
         // const hasRoles =

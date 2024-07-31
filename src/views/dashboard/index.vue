@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <h1>Vue3-Element-Admin-Thin</h1>
+    <h1>欢迎来到博客管理系统</h1>
   </div>
 </template>
 

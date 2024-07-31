@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div>网站基础信息</div>
+  <div>修改界面</div>
 </template>
 
 <style scoped lang="scss"></style>
