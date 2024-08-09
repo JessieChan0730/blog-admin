@@ -38,6 +38,9 @@ service.interceptors.response.use(
     const { code, data, msg } = response.data;
     if (code === ResultEnum.SUCCESS) {
       return data;
+    } else if (code === ResultEnum.NOT_CONtTENT) {
+      ElMessage.success(msg || "删除成功");
+      return;
     }
 
     ElMessage.error(msg || "系统出错");
