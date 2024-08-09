@@ -1,12 +1,12 @@
 import request from "@/utils/request";
-
+import type { Pagination } from "./pagination";
 const TAGS_BASE_URL = "/api/tag/";
 
 export class TagsAPI {
-  static getAllTags() {
-    return request<any, TagsVO[]>({
+  static getAllTags(page: number) {
+    return request<any, Pagination<TagsVO>>({
       method: "get",
-      url: `${TAGS_BASE_URL}`,
+      url: `${TAGS_BASE_URL}?page=${page}`,
     });
   }
 

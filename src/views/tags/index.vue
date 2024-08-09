@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ComponentSize } from "element-plus";
 import { TagsVO, TagsAPI, TagsForm } from "@/api/tags";
+import type { Pagination } from "@/api/pagination";
 import { onMounted } from "vue";
 import type { FormRules, FormInstance } from "element-plus";
 import { InfoFilled } from "@element-plus/icons-vue";
@@ -27,6 +27,13 @@ const tagForm = reactive<TagsForm>({
   name: "",
 });
 
+let tagsListPagination = reactive<Pagination<TagsVO>>({
+  count: 0,
+  next: "",
+  previous: "",
+  results: [],
+});
+
 // 表单验证规则
 const tagsFormRuler = reactive<FormRules<TagsForm>>({
   name: [
@@ -40,29 +47,32 @@ const tagsFormRuler = reactive<FormRules<TagsForm>>({
   ],
 });
 
-const tagsList = ref<TagsVO[]>();
-const currentPage4 = ref(4);
-const pageSize4 = ref(100);
-const size = ref<ComponentSize>("default");
+const currentPage = ref(1);
 const disabled = ref(false);
 const background = ref(true);
 const ruleFormRef = ref<FormInstance>();
-
+const pageSize = ref(5);
 // 请求数据
 onMounted(() => {
-  loadTagsData();
+  loadTagsData(1);
 });
 
-const loadTagsData = async () => {
-  tagsList.value = await TagsAPI.getAllTags();
+const loadTagsData = async (page: number) => {
+  const response = await TagsAPI.getAllTags(page);
+  if (response) {
+    tagsListPagination.count = response.count;
+    tagsListPagination.next = response.next;
+    tagsListPagination.previous = response.previous;
+    tagsListPagination.results = response.results;
+  }
 };
 
 const handleSizeChange = (val: number) => {
   console.log(`${val} items per page`);
 };
 
-const handleCurrentChange = (val: number) => {
-  console.log(`current page: ${val}`);
+const handleCurrentChange = (page: number) => {
+  loadTagsData(page);
 };
 
 const showDialog = (type: DType, row?: any) => {
@@ -90,10 +100,14 @@ const commit = async (formEl: FormInstance | undefined) => {
     if (valid) {
       if (dialogInfo.type == DType.Add) {
         result = await TagsAPI.addTags(tagForm);
-        tagsList.value?.push(result);
+        // 刷新页面数据
+        if (tagsListPagination.results.length < pageSize.value) {
+          tagsListPagination.results.push(result);
+        }
+        tagsListPagination.count++;
       } else if (dialogInfo.type == DType.Edit) {
         result = await TagsAPI.updateTags(tagForm.id as number, tagForm);
-        tagsList.value = tagsList.value?.map((tag) => {
+        tagsListPagination.results = tagsListPagination.results?.map((tag) => {
           if (tag.id == result.id) {
             tag.name = result.name;
           }
@@ -113,9 +127,9 @@ const commit = async (formEl: FormInstance | undefined) => {
 
 const deleteTag = async (id: number | string) => {
   await TagsAPI.deleteTag(id);
-  tagsList.value = tagsList.value?.filter((tag) => {
-    return tag.id != id;
-  });
+  tagsListPagination.count--;
+  // 刷新当页数据
+  loadTagsData(currentPage.value);
 };
 </script>
 
@@ -128,7 +142,12 @@ const deleteTag = async (id: number | string) => {
         </el-button>
         <el-button type="danger">删除</el-button>
       </template>
-      <el-table :data="tagsList" border style="width: 100%" stripe>
+      <el-table
+        :data="tagsListPagination.results"
+        border
+        style="width: 100%"
+        stripe
+      >
         <el-table-column type="selection" width="55" />
         <el-table-column property="id" label="标签ID" width="200" />
         <el-table-column property="name" label="标签名" width="full" />
@@ -160,14 +179,13 @@ const deleteTag = async (id: number | string) => {
       </el-table>
       <template #footer>
         <el-pagination
-          v-model:current-page="currentPage4"
-          v-model:page-size="pageSize4"
-          :page-sizes="[100, 200, 300, 400]"
-          :size="size"
+          :default-page-size="pageSize"
+          v-model:current-page="currentPage"
+          :page-size="pageSize"
+          :total="tagsListPagination.count"
           :disabled="disabled"
           :background="background"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="400"
+          layout="total, prev, pager, next, jumper"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
