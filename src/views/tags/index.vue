@@ -3,7 +3,7 @@ import { TagsVO, TagsAPI, TagsForm } from "@/api/tags";
 import type { Pagination } from "@/api/pagination";
 import { onMounted } from "vue";
 import type { FormRules, FormInstance } from "element-plus";
-import { InfoFilled } from "@element-plus/icons-vue";
+import { Delete, InfoFilled, Plus } from "@element-plus/icons-vue";
 
 enum DType {
   Add,
@@ -156,7 +156,7 @@ const selectChange = (newSelection: TagsVO[]) => {
   <div class="app-container">
     <el-card shadow="never" class="table-container">
       <template #header>
-        <el-button type="success" @click="showDialog(DType.Add)">
+        <el-button type="success" @click="showDialog(DType.Add)" :icon="Plus">
           新增
         </el-button>
         <el-popconfirm
@@ -170,7 +170,7 @@ const selectChange = (newSelection: TagsVO[]) => {
           @confirm="deleteTags"
         >
           <template #reference>
-            <el-button type="danger">删除</el-button>
+            <el-button type="danger" :icon="Delete">删除</el-button>
           </template>
         </el-popconfirm>
       </template>
@@ -250,5 +250,3 @@ const selectChange = (newSelection: TagsVO[]) => {
     </el-dialog>
   </div>
 </template>
-
-<style scoped lang="scss"></style>

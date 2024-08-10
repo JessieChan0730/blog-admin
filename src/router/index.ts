@@ -56,38 +56,6 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: "/meta",
-    component: Layout,
-    redirect: "/meta/home",
-    meta: {
-      title: "网站信息",
-      icon: "homepage",
-    },
-    children: [
-      {
-        path: "update",
-        // name 必须唯一
-        name: "meta_update",
-        component: () => import("@/views/meta/update/index.vue"),
-        meta: {
-          title: "更新网站信息",
-          icon: "homepage",
-          keepAlive: true,
-        },
-      },
-      {
-        path: "home",
-        name: "meta_home",
-        component: () => import("@/views/meta/index.vue"),
-        meta: {
-          title: "查看信息",
-          icon: "homepage",
-          keepAlive: true,
-        },
-      },
-    ],
-  },
-  {
     path: "/tag",
     component: Layout,
     redirect: "/tags/home",
@@ -98,7 +66,24 @@ export const constantRoutes: RouteRecordRaw[] = [
         component: () => import("@/views/tags/index.vue"),
         meta: {
           title: "博客标签",
-          icon: "homepage",
+          icon: "el-icon-CollectionTag",
+          keepAlive: true,
+        },
+      },
+    ],
+  },
+  {
+    path: "/category",
+    component: Layout,
+    redirect: "/category/home",
+    children: [
+      {
+        path: "home",
+        name: "category",
+        component: () => import("@/views/category/index.vue"),
+        meta: {
+          title: "博客分类",
+          icon: "menu",
           keepAlive: true,
         },
       },
