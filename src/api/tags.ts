@@ -41,6 +41,18 @@ export class TagsAPI {
       method: "delete",
     });
   }
+  static deleteTags(ids: number[]) {
+    return request<any, null>({
+      url: `${TAGS_BASE_URL}/multiple/`,
+      method: "delete",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        ids,
+      },
+    });
+  }
 }
 
 export interface TagsVO {

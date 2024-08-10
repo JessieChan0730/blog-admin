@@ -52,11 +52,21 @@ const disabled = ref(false);
 const background = ref(true);
 const ruleFormRef = ref<FormInstance>();
 const pageSize = ref(5);
+// 选中的tags
+const selectTags = ref<TagsVO[]>([]);
 // 请求数据
 onMounted(() => {
   loadTagsData(1);
 });
-
+/**
+ * 计算属性
+ * 通过checkbox选中的tags实例，计算出对应的ID数组
+ */
+const ids = computed(() => {
+  return selectTags.value.map((tag) => {
+    return tag.id;
+  });
+});
 const loadTagsData = async (page: number) => {
   const response = await TagsAPI.getAllTags(page);
   if (response) {
@@ -124,12 +134,21 @@ const commit = async (formEl: FormInstance | undefined) => {
     }
   });
 };
-
+// 删除单个tag
 const deleteTag = async (id: number | string) => {
   await TagsAPI.deleteTag(id);
-  tagsListPagination.count--;
   // 刷新当页数据
   loadTagsData(currentPage.value);
+};
+// 删除多个tag
+const deleteTags = async () => {
+  await TagsAPI.deleteTags(ids.value);
+  // 刷新当页数据
+  loadTagsData(currentPage.value);
+};
+
+const selectChange = (newSelection: TagsVO[]) => {
+  selectTags.value = newSelection;
 };
 </script>
 
@@ -140,13 +159,27 @@ const deleteTag = async (id: number | string) => {
         <el-button type="success" @click="showDialog(DType.Add)">
           新增
         </el-button>
-        <el-button type="danger">删除</el-button>
+        <el-popconfirm
+          confirm-button-text="确认"
+          cancel-button-text="取消"
+          :icon="InfoFilled"
+          icon-color="#f40"
+          title="你确定要删除这些标签吗？"
+          width="220"
+          confirm-button-type="danger"
+          @confirm="deleteTags"
+        >
+          <template #reference>
+            <el-button type="danger">删除</el-button>
+          </template>
+        </el-popconfirm>
       </template>
       <el-table
         :data="tagsListPagination.results"
         border
         style="width: 100%"
         stripe
+        @selection-change="selectChange"
       >
         <el-table-column type="selection" width="55" />
         <el-table-column property="id" label="标签ID" width="200" />
