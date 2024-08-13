@@ -46,6 +46,19 @@ export class CategoryAPI {
       method: "delete",
     });
   }
+
+  static deleteCategories(ids: number[]) {
+    return request<any, null>({
+      url: `${CATEGORY_BASE_URL}/multiple/`,
+      method: "delete",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        ids,
+      },
+    });
+  }
 }
 
 export interface CategoryVo {

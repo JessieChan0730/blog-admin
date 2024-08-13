@@ -4,6 +4,7 @@ import type { Pagination } from "@/api/pagination";
 import type { CategoryForm, CategoryVo, QueryParams } from "@/api/category";
 import { CategoryAPI } from "@/api/category";
 import type { FormInstance, FormRules } from "element-plus";
+import { TagsVO } from "@/api/tags";
 
 enum DType {
   Add,
@@ -65,9 +66,17 @@ const searchContent = ref("");
 const loading = ref(false);
 // 表单实例
 const ruleFormRef = ref<FormInstance>();
+// 选中的category
+const selectCategories = ref<CategoryVo[]>([]);
 // 挂载时，加载第一页数据
 onMounted(() => {
   loadCategoryData();
+});
+// 计算属性
+const ids = computed(() => {
+  return selectCategories.value.map((category) => {
+    return category.id;
+  });
 });
 // 监听器
 watch([name, page], async () => {
@@ -157,9 +166,15 @@ const loadCategoryData = async (params?: QueryParams) => {
 // 删除单个category
 const deleteCategory = async (id: number | string) => {
   await CategoryAPI.deleteCategory(id);
+  // 手动刷新当页页面
   loadCategoryData(queryParams);
 };
-
+// 删除多个category
+const deleteCategories = async () => {
+  await CategoryAPI.deleteCategories(ids.value);
+  // 手动刷新当页页面
+  loadCategoryData(queryParams);
+};
 // 搜索
 const search = () => {
   name.value = searchContent.value;
@@ -178,6 +193,10 @@ const handleCurrentChange = (currentPage: number) => {
 
 const handleSizeChange = (val: number) => {
   console.log(`${val} items per page`);
+};
+
+const selectChange = (newSelection: CategoryVo[]) => {
+  selectCategories.value = newSelection;
 };
 </script>
 
@@ -214,6 +233,7 @@ const handleSizeChange = (val: number) => {
           title="你确定要删除这些标签吗？"
           width="220"
           confirm-button-type="danger"
+          @confirm="deleteCategories"
         >
           <template #reference>
             <el-button type="danger" :icon="Delete">删除</el-button>
@@ -226,6 +246,7 @@ const handleSizeChange = (val: number) => {
         border
         style="width: 100%"
         stripe
+        @selection-change="selectChange"
       >
         <el-table-column align="center" type="selection" width="55" />
         <el-table-column
