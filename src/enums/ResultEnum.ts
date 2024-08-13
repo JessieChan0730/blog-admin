@@ -20,4 +20,9 @@ export const enum ResultEnum {
    * 令牌无效或过期
    */
   TOKEN_INVALID = "401",
+
+  /**
+   * 请求错误
+   */
+  BAD_REQUEST = 400,
 }

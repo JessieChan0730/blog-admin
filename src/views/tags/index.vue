@@ -88,6 +88,7 @@ const handleCurrentChange = (page: number) => {
 const showDialog = (type: DType, row?: any) => {
   if (type == DType.Edit) {
     dialogInfo.title = "编辑标签";
+    // 初始化dialog中编辑框的内容
     tagForm.name = row.name;
     tagForm.id = row.id;
   } else if (type == DType.Add) {
@@ -122,6 +123,12 @@ const commit = async (formEl: FormInstance | undefined) => {
             tag.name = result.name;
           }
           return tag;
+        });
+      } else {
+        ElNotification({
+          title: "错误",
+          message: "系统错误",
+          type: "error",
         });
       }
       closeDialog();
@@ -225,6 +232,7 @@ const selectChange = (newSelection: TagsVO[]) => {
       </template>
     </el-card>
     <el-dialog
+      @close="closeDialog"
       v-model="dialogInfo.visible"
       :title="dialogInfo.title"
       width="500"

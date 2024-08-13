@@ -1,11 +1,30 @@
 <script setup lang="ts">
 import { Delete, InfoFilled, Plus } from "@element-plus/icons-vue";
 import type { Pagination } from "@/api/pagination";
-import type { CategoryVo, QueryParams } from "@/api/category";
+import type { CategoryForm, CategoryVo, QueryParams } from "@/api/category";
 import { CategoryAPI } from "@/api/category";
+import type { FormInstance, FormRules } from "element-plus";
+
+enum DType {
+  Add,
+  Edit,
+  NUll,
+}
+
+interface DialogInfo {
+  visible: boolean;
+  title: string;
+  type: DType;
+}
+
+const dialogInfo = reactive<DialogInfo>({
+  visible: false,
+  title: "",
+  type: DType.NUll,
+});
 
 let categoryListPagination = reactive<Pagination<CategoryVo>>({
-  count: 2,
+  count: 1,
   next: "",
   previous: "",
   results: [],
@@ -16,6 +35,23 @@ let queryParams = reactive<QueryParams>({
   page: 1,
 });
 
+const categoryForm = reactive<CategoryForm>({
+  name: "",
+  display: false,
+});
+
+const categoryFormRuler = reactive<FormRules<CategoryForm>>({
+  name: [
+    { required: true, message: "必须填写分类名！", trigger: "blur" },
+    {
+      min: 1,
+      max: 10,
+      message: "分类名长度最小为1，最大为10！",
+      trigger: "blur",
+    },
+  ],
+  display: [],
+});
 // 拆分 queryParams，并且交给监听器处理
 const name = toRef(queryParams, "name");
 const page = toRef(queryParams, "page");
@@ -27,7 +63,8 @@ const background = ref(true);
 const searchContent = ref("");
 // 加载动画
 const loading = ref(false);
-
+// 表单实例
+const ruleFormRef = ref<FormInstance>();
 // 挂载时，加载第一页数据
 onMounted(() => {
   loadCategoryData();
@@ -38,6 +75,73 @@ watch([name, page], async () => {
   await loadCategoryData(queryParams);
   loading.value = false;
 });
+
+// 展示dialog
+const showDialog = (type: DType, row?: any) => {
+  if (type == DType.Edit) {
+    dialogInfo.title = "编分类";
+    // 初始化dialog中编辑框的内容
+    categoryForm.name = row.name;
+    categoryForm.display = row.display;
+    categoryForm.id = row.id;
+  } else if (type == DType.Add) {
+    dialogInfo.title = "新增分类";
+  }
+  dialogInfo.type = type;
+  dialogInfo.visible = true;
+};
+
+// 关闭对话框
+const closeDialog = () => {
+  dialogInfo.visible = false;
+  categoryForm.name = "";
+  categoryForm.id = -1;
+  categoryForm.display = false;
+};
+
+// 提交对话框数据
+const commit = async (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  let result: CategoryVo;
+  await formEl.validate(async (valid, fields) => {
+    if (valid) {
+      // TODO 验证通过
+      if (dialogInfo.type == DType.Add) {
+        // TODO 新增
+        result = await CategoryAPI.addCategory(categoryForm);
+        if (categoryListPagination.results.length < pageSize.value) {
+          categoryListPagination.results.push(result);
+        }
+        categoryListPagination.count++;
+      } else if (dialogInfo.type == DType.Edit) {
+        // TODO 编辑
+        result = await CategoryAPI.updateCategory(categoryForm);
+        categoryListPagination.results = categoryListPagination.results?.map(
+          (category) => {
+            if (category.id == result.id) {
+              category.name = result.name;
+              category.display = result.display;
+            }
+            return category;
+          }
+        );
+      } else {
+        ElNotification({
+          title: "错误",
+          message: "系统错误",
+          type: "error",
+        });
+      }
+      closeDialog();
+    } else {
+      ElNotification({
+        title: "错误",
+        message: "请按照表单规则提交",
+        type: "error",
+      });
+    }
+  });
+};
 
 // 加载数据
 const loadCategoryData = async (params?: QueryParams) => {
@@ -50,6 +154,12 @@ const loadCategoryData = async (params?: QueryParams) => {
   }
 };
 
+// 删除单个category
+const deleteCategory = async (id: number | string) => {
+  await CategoryAPI.deleteCategory(id);
+  loadCategoryData(queryParams);
+};
+
 // 搜索
 const search = () => {
   name.value = searchContent.value;
@@ -59,6 +169,7 @@ const search = () => {
 const reset = () => {
   name.value = "";
   page.value = 1;
+  searchContent.value = "";
 };
 
 const handleCurrentChange = (currentPage: number) => {
@@ -92,7 +203,9 @@ const handleSizeChange = (val: number) => {
     </div>
     <el-card shadow="never" class="table-container">
       <template #header>
-        <el-button type="success" :icon="Plus">新增</el-button>
+        <el-button type="success" :icon="Plus" @click="showDialog(DType.Add)">
+          新增
+        </el-button>
         <el-popconfirm
           confirm-button-text="确认"
           cancel-button-text="取消"
@@ -144,8 +257,14 @@ const handleSizeChange = (val: number) => {
           </template>
         </el-table-column>
         <el-table-column label="操作">
-          <template #default>
-            <el-button size="small" type="primary">编辑</el-button>
+          <template #default="prop">
+            <el-button
+              size="small"
+              type="primary"
+              @click="showDialog(DType.Edit, prop.row)"
+            >
+              编辑
+            </el-button>
             <el-popconfirm
               confirm-button-text="确认"
               cancel-button-text="取消"
@@ -154,6 +273,7 @@ const handleSizeChange = (val: number) => {
               title="你确定要删除这个标签吗？"
               width="220"
               confirm-button-type="danger"
+              @confirm="deleteCategory(prop.row.id)"
             >
               <template #reference>
                 <el-button size="small" type="danger">删除</el-button>
@@ -176,6 +296,44 @@ const handleSizeChange = (val: number) => {
         />
       </template>
     </el-card>
+    <!--Dialog-->
+    <el-dialog
+      @close="closeDialog"
+      v-model="dialogInfo.visible"
+      :title="dialogInfo.title"
+      width="500"
+    >
+      <el-form
+        :model="categoryForm"
+        :rules="categoryFormRuler"
+        ref="ruleFormRef"
+      >
+        <el-form-item
+          label="标签名:"
+          label-width="70px"
+          label-position="top"
+          prop="name"
+        >
+          <el-input v-model="categoryForm.name" auto-complete="off" />
+        </el-form-item>
+        <el-form-item
+          label="是否展示:"
+          label-width="70px"
+          label-position="top"
+          prop="display"
+        >
+          <el-switch v-model="categoryForm.display" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="closeDialog">取消</el-button>
+          <el-button type="primary" @click="commit(ruleFormRef)">
+            确定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

@@ -42,12 +42,12 @@ service.interceptors.response.use(
       ElMessage.success(msg || "删除成功");
       return;
     }
-
     ElMessage.error(msg || "系统出错");
     return Promise.reject(new Error(msg || "Error"));
   },
   (error: any) => {
     // 异常处理
+    // 登录信息过期
     if (error.response.data) {
       const { code, msg } = error.response.data;
       if (code === ResultEnum.TOKEN_INVALID) {
@@ -61,6 +61,11 @@ service.interceptors.response.use(
           .then(() => {
             location.reload();
           });
+        // BadRequest
+      } else if (code === ResultEnum.BAD_REQUEST) {
+        ElMessage.error(msg);
+        // 结束，不向下传递异常
+        return;
       } else {
         ElMessage.error(msg || "系统出错");
       }
