@@ -10,6 +10,8 @@ const service = axios.create({
   headers: { "Content-Type": "application/json;charset=utf-8" },
 });
 
+const handlerExps = (exps: any) => {};
+
 // 请求拦截器
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -34,16 +36,20 @@ service.interceptors.response.use(
     ) {
       return response;
     }
-
-    const { code, data, msg } = response.data;
-    if (code === ResultEnum.SUCCESS) {
-      return data;
-    } else if (code === ResultEnum.NOT_CONtTENT) {
-      ElMessage.success(msg || "删除成功");
+    // 判断是否有响应数据
+    if (response.data) {
+      const { code, data, msg } = response.data;
+      if (code === ResultEnum.SUCCESS || code === ResultEnum.CREATE) {
+        return data;
+      }
+    } else if (response.status === ResultEnum.NOT_CONtTENT) {
+      ElMessage.success("删除成功");
+      // 结束
       return;
+    } else {
+      ElMessage.error("系统出错");
+      return Promise.reject(new Error("Error"));
     }
-    ElMessage.error(msg || "系统出错");
-    return Promise.reject(new Error(msg || "Error"));
   },
   (error: any) => {
     // 异常处理
@@ -61,10 +67,11 @@ service.interceptors.response.use(
           .then(() => {
             location.reload();
           });
-        // BadRequest
       } else if (code === ResultEnum.BAD_REQUEST) {
+        const { exps } = error.response.data;
         ElMessage.error(msg);
         // 结束，不向下传递异常
+        // TODO 处理 exps
         return;
       } else {
         ElMessage.error(msg || "系统出错");

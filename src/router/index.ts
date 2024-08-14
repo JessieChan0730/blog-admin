@@ -56,6 +56,23 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: "/meta",
+    component: Layout,
+    redirect: "/meta/home",
+    children: [
+      {
+        path: "home",
+        name: "meta",
+        component: () => import("@/views/meta/index.vue"),
+        meta: {
+          title: "网站元信息",
+          icon: "el-icon-Document",
+          keepAlive: true,
+        },
+      },
+    ],
+  },
+  {
     path: "/tag",
     component: Layout,
     redirect: "/tags/home",
@@ -84,6 +101,35 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: {
           title: "博客分类",
           icon: "menu",
+          keepAlive: true,
+        },
+      },
+    ],
+  },
+  {
+    path: "/doc",
+    component: Layout,
+    redirect: "/category/redoc",
+    meta: {
+      title: "API文档",
+      icon: "api",
+    },
+    children: [
+      {
+        path: "redoc",
+        name: "redoc",
+        component: () => import("@/views/api/redoc.vue"),
+        meta: {
+          title: "Redoc",
+          keepAlive: true,
+        },
+      },
+      {
+        path: "swagger",
+        name: "swagger",
+        component: () => import("@/views/api/swagger.vue"),
+        meta: {
+          title: "Swagger",
           keepAlive: true,
         },
       },

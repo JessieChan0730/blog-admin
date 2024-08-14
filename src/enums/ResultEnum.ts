@@ -11,7 +11,10 @@ export const enum ResultEnum {
    * 删除成功
    */
   NOT_CONtTENT = 204,
-
+  /**
+   * 创建成功
+   */
+  CREATE = 201,
   /**
    * 错误
    */
@@ -19,7 +22,7 @@ export const enum ResultEnum {
   /**
    * 令牌无效或过期
    */
-  TOKEN_INVALID = "401",
+  TOKEN_INVALID = 401,
 
   /**
    * 请求错误
