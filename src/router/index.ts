@@ -12,7 +12,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     children: [
       {
         path: "/redirect/:path(.*)",
-        component: () => import("@/views/redirect/index.vue"),
+        component: () => import("@/views/setting/index.vue"),
       },
     ],
   },
@@ -56,17 +56,17 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: "/meta",
+    path: "/setting",
     component: Layout,
-    redirect: "/meta/home",
+    redirect: "/setting/home",
     children: [
       {
         path: "home",
         name: "meta",
-        component: () => import("@/views/meta/index.vue"),
+        component: () => import("@/views/setting/index.vue"),
         meta: {
-          title: "网站元信息",
-          icon: "el-icon-Document",
+          title: "网站设置",
+          icon: "el-icon-Setting",
           keepAlive: true,
         },
       },
