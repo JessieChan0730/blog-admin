@@ -73,6 +73,36 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: "/blog",
+    component: Layout,
+    redirect: "/blog/home",
+    meta: {
+      title: "博客管理",
+      icon: "el-icon-Document",
+    },
+    children: [
+      {
+        path: "home",
+        name: "my_blog",
+        component: () => import("@/views/blog/index.vue"),
+        meta: {
+          title: "我的博客",
+          keepAlive: true,
+        },
+      },
+      {
+        path: "publish",
+        name: "publish",
+        component: () => import("@/views/blog/publish.vue"),
+        meta: {
+          title: "发表博客",
+          keepAlive: true,
+        },
+      },
+    ],
+  },
+
+  {
     path: "/tag",
     component: Layout,
     redirect: "/tags/home",

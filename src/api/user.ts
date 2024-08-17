@@ -1,38 +1,66 @@
 import request from "@/utils/request";
-
-class UserAPI {
+const USER_INFO_URL = "/api/user";
+export class UserAPI {
   /**
    * 获取当前登录用户信息
    *
    * @returns 登录用户昵称、头像信息，包括角色和权限
    */
   static getInfo() {
-    return request<any, UserInfo>({
-      url: "/api/user/info/",
+    return request<any, UserInfoVo>({
+      url: `${USER_INFO_URL}/info/`,
       method: "get",
+    });
+  }
+
+  static updateUserInfo(data: UserInfoForm) {
+    return request<any, UserInfoVo>({
+      url: `${USER_INFO_URL}/change/`,
+      method: "put",
+      data,
     });
   }
 }
 
 export default UserAPI;
 
-/** 登录用户信息 */
-export interface UserInfo {
+export interface Hobby {
+  name: string;
+  detail: string;
+}
+
+export interface MediaLink {
+  github: string;
+  bilibili: string;
+  csdn: string;
+  tiktok: string;
+}
+
+interface User {
   /** 用户ID */
-  userId?: number;
-
+  id: number;
   /** 用户名 */
-  username?: string;
+  username: string;
+}
 
-  /** 昵称 */
+export interface MoreInfo {
+  hobby: Hobby[];
+  media: MediaLink;
+}
+
+/** 用户信息 */
+export interface UserInfoVo {
+  nickname: string;
+  // /** 头像URL */
+  avatar: string;
+  signature: string;
+  about_me: string;
+  more_info: MoreInfo;
+}
+
+/** 修改用户信息表单 */
+export interface UserInfoForm {
   nickname?: string;
-
-  /** 头像URL */
-  avatar?: string;
-
-  /** 角色 */
-  roles: string[];
-
-  /** 权限 */
-  perms: string[];
+  signature?: string;
+  more_info?: MoreInfo;
 }
