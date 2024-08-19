@@ -2,7 +2,7 @@
 import { genFileId, UploadInstance, UploadRawFile } from "element-plus";
 import type { UploadProps } from "element-plus";
 import { Picture, Upload } from "@element-plus/icons-vue";
-import { MetaForm, MetaAPI } from "@/api/meta";
+import { MetaForm, MetaAPI } from "@/api/settings";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 
 const metaForm = reactive<MetaForm>({});
@@ -11,7 +11,7 @@ const uploadHeaders = reactive<Record<string, any>>({
 });
 
 const cover = ref<string>("");
-const uploadUrl = ref("http://127.0.0.1:8000/api/meta");
+const uploadUrl = ref("http://127.0.0.1:8000/api/settings");
 const upload = ref<UploadInstance>();
 
 onMounted(() => {

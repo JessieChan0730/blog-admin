@@ -1,6 +1,6 @@
 import request from "@/utils/request";
 
-const META_BASE_URL = "/api/meta";
+const META_BASE_URL = "/api/settings";
 
 export class MetaAPI {
   static getMeta() {

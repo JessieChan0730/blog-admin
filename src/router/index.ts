@@ -91,6 +91,43 @@ export const constantRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: ":id",
+        name: "blog_detail",
+        component: () => import("@/views/blog/detail/index.vue"),
+        redirect(to) {
+          const id = to.params.id;
+          return `/blog/${id}/preview`;
+        },
+        meta: {
+          title: "详情界面",
+          keepAlive: true,
+          hidden: true,
+          activeMenu: "/blog/home",
+        },
+        children: [
+          {
+            path: "preview",
+            name: "blog_preview",
+            component: () => import("@/views/blog/detail/preview.vue"),
+            meta: {
+              title: "预览博客",
+              keepAlive: true,
+              hidden: true,
+            },
+          },
+          {
+            path: "manage",
+            name: "blog_manage",
+            component: () => import("@/views/blog/detail/manage.vue"),
+            meta: {
+              title: "管理博客",
+              keepAlive: true,
+              hidden: true,
+            },
+          },
+        ],
+      },
+      {
         path: "publish",
         name: "publish",
         component: () => import("@/views/blog/publish.vue"),

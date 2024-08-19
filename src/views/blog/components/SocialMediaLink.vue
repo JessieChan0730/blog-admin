@@ -8,7 +8,7 @@ defineProps<{
 
 <template>
   <div class="list-container">
-    <ul class="list" v-for="(index, media) in mediaLink" :key="index">
+    <ul class="list" v-for="(index, media) in mediaLink" :key="media">
       <li class="item">
         <SvgIcon class="mr-1.5" :icon-class="media" />
         <span class="pre">

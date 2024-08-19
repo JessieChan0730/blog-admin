@@ -59,6 +59,13 @@ export class CategoryAPI {
       },
     });
   }
+
+  static getAllCategory() {
+    return request<any, CategoryVo[]>({
+      url: `${CATEGORY_BASE_URL}/all/`,
+      method: "get",
+    });
+  }
 }
 
 export interface CategoryVo {

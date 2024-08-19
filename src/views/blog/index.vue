@@ -9,17 +9,38 @@ import {
   UploadRawFile,
 } from "element-plus";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
+import { Document, Hide, Search, View } from "@element-plus/icons-vue";
+import router from "@/router";
+import { useBlogStore } from "@/store";
+import { QueryParams } from "@/api/blog";
+import { CategoryAPI, CategoryVo } from "@/api/category";
 
-const activeNames = ref([]);
-// 是否展示信息面板
-const isShowInfo = ref(true);
-// Dialog是否展示
-const dialogFormVisible = ref(false);
-// 文件上传表单实例对象
-const upload = ref<UploadInstance>();
-// 头像上传地址
-const uploadUrl = ref("http://127.0.0.1:8000/api/user/change/");
+const blogStore = useBlogStore();
 
+const orderOptions = [
+  {
+    value: "-create_data",
+    label: "默认",
+  },
+  {
+    value: "create_date",
+    label: "时间正序",
+  },
+  {
+    value: "-update_date",
+    label: "更新时间",
+  },
+];
+
+const categoryOptions = ref<CategoryVo[]>([]);
+
+// keyword
+const queryForm = reactive<QueryParams>({
+  search: "",
+  ordering: "",
+  page: 1,
+  category: 0,
+});
 const userInfo = reactive<UserInfoVo>({
   nickname: "",
   avatar: "",
@@ -44,8 +65,41 @@ const userInfo = reactive<UserInfoVo>({
 const uploadHeaders = reactive<Record<string, any>>({
   Authorization: localStorage.getItem(TOKEN_KEY),
 });
+
+// 解构
+const keyword = toRef(queryForm, "search");
+const orderBy = toRef(queryForm, "ordering");
+const page = toRef(queryForm, "page");
+const category = toRef(queryForm, "category");
+
+// 页面大小
+const pageSize = ref(2);
+const disabled = ref(false);
+const background = ref(true);
+const activeNames = ref([]);
+// 是否展示信息面板
+const isShowInfo = ref(true);
+// Dialog是否展示
+const dialogFormVisible = ref(false);
+// 文件上传表单实例对象
+const upload = ref<UploadInstance>();
+// 头像上传地址
+const uploadUrl = ref("http://127.0.0.1:8000/api/user/change/");
+// 临时的状态
+const temp_search = ref("");
+const temp_category = ref();
+const temp_ordering = ref("");
+
 onMounted(() => {
   getUserInfo();
+  blogStore.init(queryForm);
+  CategoryAPI.getAllCategory().then((data) => {
+    categoryOptions.value.push(...data);
+  });
+});
+
+watch([keyword, orderBy, page, category], () => {
+  blogStore.init(queryForm);
 });
 
 const getUserInfo = async () => {
@@ -71,10 +125,6 @@ const submitUpload = () => {
   upload.value!.submit();
 };
 
-const handleChange = (val: string[]) => {
-  console.log(val);
-};
-
 const showDialog = () => {
   dialogFormVisible.value = true;
 };
@@ -92,6 +142,8 @@ const uploadError = () => {
 // 推出编辑模式
 const exitEdit = () => {
   isShowInfo.value = true;
+  // 重新同步数据
+  getUserInfo();
 };
 // 进入编辑模式
 const intoEdit = () => {
@@ -132,13 +184,33 @@ const removeHobby = () => {
     ElMessage.error("爱好最少需要一个");
   }
 };
+// 进入文章详情编辑页
+const intoDetail = (id: number) => {
+  router.push({ name: "blog_detail", params: { id } });
+};
+// 开始搜索
+const search = () => {
+  queryForm.page = 1;
+  queryForm.search = temp_search.value;
+  queryForm.category = temp_category.value;
+  queryForm.ordering = temp_ordering.value;
+};
+const reset = () => {
+  temp_ordering.value = "";
+  temp_category.value = null;
+  temp_search.value = "";
+  queryForm.page = 1;
+  queryForm.search = "";
+  queryForm.category = 0;
+  queryForm.ordering = "-create_date";
+};
 </script>
 
 <template>
   <div class="app-container">
     <el-row :gutter="20">
       <!--左侧-->
-      <el-col :lg="6">
+      <el-col :lg="6" :sm="12">
         <el-card>
           <template #header>
             <div class="avatar-container">
@@ -170,11 +242,7 @@ const removeHobby = () => {
                     <MagicStick />
                   </template>
                 </ModuleTitle>
-                <el-collapse
-                  class="my-2 color-gray"
-                  v-model="activeNames"
-                  @change="handleChange"
-                >
+                <el-collapse class="my-2 color-gray" v-model="activeNames">
                   <el-collapse-item
                     v-for="(hobby, index) in userInfo.more_info.hobby"
                     :title="hobby.name"
@@ -215,11 +283,11 @@ const removeHobby = () => {
                   <div
                     class="w-full"
                     v-for="(hobby, index) in userInfo.more_info.hobby"
-                    :key="hobby.name"
+                    :key="index"
                   >
                     <el-input
                       class="mb-1"
-                      :placeholder="`爱好${index + 1}`"
+                      placeholder="爱好名"
                       size="small"
                       v-model="hobby.name"
                     />
@@ -252,7 +320,7 @@ const removeHobby = () => {
                   <div
                     class="link-input w-full flex flex-row justify-between items-center mb-2"
                     v-for="(index, media) in userInfo.more_info.media"
-                    :key="index"
+                    :key="media"
                   >
                     <SvgIcon size="1.2rem" class="mr-1.5" :icon-class="media" />
                     <el-input
@@ -279,7 +347,135 @@ const removeHobby = () => {
         </el-card>
       </el-col>
       <!--右侧-->
-      <el-col :lg="18" class="bg-black">world</el-col>
+      <el-col :lg="18" :sm="12">
+        <el-card>
+          <template #header>
+            <el-form
+              :model="queryForm"
+              :inline="true"
+              class="flex flex-row justify-end"
+            >
+              <el-form-item label="关键字">
+                <el-input
+                  v-model="temp_search"
+                  style="width: 200px"
+                  placeholder="请输入关键字"
+                  :suffix-icon="Search"
+                />
+              </el-form-item>
+              <el-form-item label="分类">
+                <el-select
+                  v-model="temp_category"
+                  placeholder="分类名"
+                  size="default"
+                  style="width: 100px"
+                >
+                  <el-option
+                    v-for="category in categoryOptions"
+                    :key="category.id"
+                    :label="category.name"
+                    :value="category.id"
+                  />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="排序规则">
+                <el-select
+                  v-model="temp_ordering"
+                  placeholder="排序"
+                  size="default"
+                  style="width: 100px"
+                >
+                  <el-option
+                    v-for="item in orderOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="search">搜索</el-button>
+                <el-button @click="reset">重置</el-button>
+              </el-form-item>
+            </el-form>
+          </template>
+          <template #default>
+            <!--TODO 博客列表-->
+            <el-row>
+              <el-col
+                :lg="12"
+                class="px-1"
+                v-for="blog in blogStore.articleListVo.results"
+                :key="blog.id"
+              >
+                <el-card shadow="hover">
+                  <template #header>
+                    <div
+                      class="title flex flex-row justify-between items-center"
+                    >
+                      <el-link type="primary" @click="intoDetail(blog.id)">
+                        <el-icon class="mx-0.5" :size="14">
+                          <Document />
+                        </el-icon>
+                        {{ blog.title }}
+                      </el-link>
+                      <el-icon v-if="blog.visible" class="mx-0.5" :size="14">
+                        <View />
+                      </el-icon>
+                      <el-icon v-else class="mx-0.5" :size="14">
+                        <Hide />
+                      </el-icon>
+                    </div>
+                  </template>
+                  <template #default>
+                    <div class="cover intro">
+                      <el-image
+                        class="w-full mb-2 h-220px"
+                        :src="blog.cover"
+                        fit="fill"
+                      />
+                      <el-text
+                        class="mx-1"
+                        size="small"
+                        type="info"
+                        line-clamp="2"
+                      >
+                        {{ blog.intro }}
+                      </el-text>
+                    </div>
+                  </template>
+                  <template #footer>
+                    <div class="flex gap-2">
+                      <el-tag
+                        size="small"
+                        v-for="tags in blog.tags"
+                        :key="tags.id"
+                        type="primary"
+                        effect="light"
+                      >
+                        {{ tags.name }}
+                      </el-tag>
+                    </div>
+                  </template>
+                </el-card>
+              </el-col>
+            </el-row>
+          </template>
+          <template #footer>
+            <div class="pagination-container flex flex-row justify-center">
+              <el-pagination
+                :default-page-size="pageSize"
+                v-model:current-page="queryForm.page"
+                :page-size="pageSize"
+                :total="blogStore.articleListVo.count"
+                :disabled="disabled"
+                :background="background"
+                layout="total, prev, pager, next, jumper"
+              />
+            </div>
+          </template>
+        </el-card>
+      </el-col>
     </el-row>
     <!--文件上传对话框-->
     <el-dialog v-model="dialogFormVisible" title="请选择上传的文件" width="500">
@@ -300,7 +496,9 @@ const removeHobby = () => {
         :on-error="uploadError"
         :auto-upload="false"
       >
-        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <el-icon class="el-icon--upload">
+          <upload-filled />
+        </el-icon>
         <div class="el-upload__text">
           拖拽到这里，或者
           <em>点击上传</em>

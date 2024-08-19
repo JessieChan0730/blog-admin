@@ -4,7 +4,6 @@ import type { Pagination } from "@/api/pagination";
 import type { CategoryForm, CategoryVo, QueryParams } from "@/api/category";
 import { CategoryAPI } from "@/api/category";
 import type { FormInstance, FormRules } from "element-plus";
-import { TagsVO } from "@/api/tags";
 
 enum DType {
   Add,
