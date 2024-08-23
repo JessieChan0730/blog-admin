@@ -35,7 +35,7 @@ export const useBlogStore = defineStore("blog", () => {
         id: article.id,
         title: article.title,
         intro: article.intro,
-        cover: article.cover,
+        cover_url: article.cover_url,
         tags: article.tags,
         visible: article.visible,
       };

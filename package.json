@@ -46,6 +46,8 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "@vueuse/core": "^10.11.0",
+    "@wangeditor/editor": "^5.1.23",
+    "@wangeditor/editor-for-vue": "5.1.10",
     "animate.css": "^4.1.1",
     "axios": "^1.7.2",
     "color": "^4.2.3",
@@ -55,6 +57,7 @@
     "path-to-regexp": "^6.2.2",
     "pinia": "^2.1.7",
     "vue": "^3.4.29",
+    "vue-dompurify-html": "^5.1.0",
     "vue-i18n": "9.9.1",
     "vue-router": "^4.3.3"
   },

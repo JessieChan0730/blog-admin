@@ -4,14 +4,25 @@ import { TagsVO } from "@/api/tags";
 import User from "@/api/user";
 import { Pagination } from "@/api/pagination";
 
-const ARTICLE_URL = "/api/article/";
+const ARTICLE_URL = "/api/article";
 
 export class ArticleAPI {
   static getArticleList(params: QueryParams) {
     return request<any, Pagination<BlogVo>>({
-      url: `${ARTICLE_URL}`,
+      url: `${ARTICLE_URL}/`,
       method: "get",
       params,
+    });
+  }
+
+  static publishArticle(data: BlogForm) {
+    return request<any, Pagination<BlogVo>>({
+      url: `${ARTICLE_URL}/publish/`,
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data,
     });
   }
 }
@@ -28,7 +39,7 @@ export interface BlogVo {
   title: string;
   content: string;
   intro: string;
-  cover: string;
+  cover_url: string;
   recommend: boolean;
   visible: boolean;
   category: CategoryVo;
@@ -43,7 +54,23 @@ export interface BlogListVo {
   id: number;
   title: string;
   intro: string;
-  cover: string;
+  cover_url: string;
   tags: TagsVO[];
   visible: boolean;
+}
+
+export interface BlogForm {
+  cover_url: string;
+  title: string;
+  intro: string;
+  content: string;
+  recommend: boolean;
+  visible: boolean;
+  category_id: number | null;
+  tags_ids: number[];
+}
+
+export interface CoverVo {
+  id: number;
+  cover: string;
 }

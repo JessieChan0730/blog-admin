@@ -5,7 +5,7 @@ import { setupStore } from "@/store";
 import type { App } from "vue";
 import { setupElIcons } from "./icons";
 import { setupPermission } from "./permission";
-
+import { setupVueDOMPurifyHTML } from "@/safe";
 export default {
   install(app: App<Element>) {
     // 自定义指令(directive)
@@ -20,5 +20,7 @@ export default {
     setupElIcons(app);
     // 路由守卫
     setupPermission();
+    // 安全组件
+    setupVueDOMPurifyHTML(app);
   },
 };

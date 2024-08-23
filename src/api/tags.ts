@@ -53,6 +53,15 @@ export class TagsAPI {
       },
     });
   }
+  static searchTags(name: string) {
+    return request<any, TagsVO[]>({
+      url: `${TAGS_BASE_URL}/search/`,
+      method: "get",
+      params: {
+        name,
+      },
+    });
+  }
 }
 
 export interface TagsVO {

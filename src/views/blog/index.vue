@@ -431,7 +431,7 @@ const reset = () => {
                     <div class="cover intro">
                       <el-image
                         class="w-full mb-2 h-220px"
-                        :src="blog.cover"
+                        :src="blog.cover_url"
                         fit="fill"
                       />
                       <el-text
