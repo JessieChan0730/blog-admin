@@ -37,6 +37,44 @@ const blogForm = reactive<BlogForm>({
   category_id: null,
   tags_ids: [],
 });
+
+const has_error = ref(true);
+
+const error_message = reactive({
+  cover_url: "",
+  tags_ids: "",
+  category_id: "",
+  title: "",
+  intro: "",
+  content: "",
+});
+// 重设错误消息
+const resetErrorMessage = () => {
+  error_message.content = "";
+  error_message.intro = "";
+  error_message.title = "";
+  error_message.category_id = "";
+  error_message.tags_ids = "";
+  error_message.cover_url = "";
+};
+
+// 重新设置表单
+const resetForm = () => {
+  blogForm.cover_url = "";
+  blogForm.title = "";
+  blogForm.intro = "";
+  blogForm.content = "";
+  blogForm.recommend = false;
+  blogForm.category_id = null;
+  blogForm.tags_ids = [];
+  blogForm.visible = true;
+  pickTags.value = [];
+  // 清除已经上传的文件
+  upload.value!.clearFiles();
+  // 退回到第一步
+  activeStep.value = 1;
+};
+
 const uploadHeaders = reactive<Record<string, any>>({
   Authorization: localStorage.getItem(TOKEN_KEY),
 });
@@ -53,6 +91,42 @@ watch(
     blogForm.tags_ids = [...newVal.map((tag) => tag.id)];
   }
 );
+
+// 验证表单数据
+const verify = () => {
+  let errors_count = 0;
+  resetErrorMessage();
+  const title_length = blogForm.title.trim().length;
+  const intro_length = blogForm.intro.trim().length;
+  const content_length = blogForm.content.trim().length;
+  if (blogForm.cover_url === "") {
+    error_message.cover_url = "必须选择一个封面";
+    errors_count++;
+  }
+  if (blogForm.tags_ids.length == 0) {
+    error_message.tags_ids = "请为文章选择一些标签";
+    errors_count++;
+  }
+  if (!blogForm.category_id) {
+    error_message.category_id = "请为文章选择分类";
+    errors_count++;
+  }
+  if (title_length == 0 || title_length > 40) {
+    error_message.title = "文章标题必填，且长度需大于0小于40";
+    errors_count++;
+  }
+  if (intro_length == 0 || intro_length > 200) {
+    error_message.intro = "文章简介为必填，且长度需大于0小于200";
+    errors_count++;
+  }
+  if (content_length == 0) {
+    error_message.content = "请编写一些内容";
+    errors_count++;
+  }
+  has_error.value = errors_count !== 0;
+  return has_error.value;
+};
+
 // 文件超出限制
 const handleExceed: UploadProps["onExceed"] = (files) => {
   upload.value!.clearFiles();
@@ -134,16 +208,27 @@ const uploadSuccess = (
 
 const publish = async () => {
   try {
-    await ArticleAPI.publishArticle(blogForm);
-    ElNotification({
-      title: "成功",
-      message: "发布摆博客成功",
-      type: "success",
-    });
+    const is_verify = verify();
+    if (!is_verify) {
+      await ArticleAPI.publishArticle(blogForm);
+      ElNotification({
+        title: "发布成功",
+        message: "发布博客成功",
+        type: "success",
+      });
+      // 重新设置表单
+      resetForm();
+    } else {
+      ElNotification({
+        title: "发布失败",
+        message: `请按照表单规则提交`,
+        type: "error",
+      });
+    }
   } catch (e) {
     ElNotification({
-      title: "失败",
-      message: `发布摆博客失败，原因:${e}`,
+      title: "请求失败",
+      message: `请求服务器失败，原因:${e}`,
       type: "error",
     });
   }
@@ -164,6 +249,9 @@ const publish = async () => {
         <div class="step1" v-show="activeStep === 1">
           <el-form label-position="top" v-model="blogForm">
             <el-form-item class="w-full" label="博客封面">
+              <div class="tip" v-if="has_error">
+                {{ error_message.cover_url }}
+              </div>
               <el-upload
                 :action="coverUploadUrl"
                 method="post"
@@ -193,59 +281,69 @@ const publish = async () => {
               </el-upload>
             </el-form-item>
             <el-form-item label="文章分类" class="mt-4">
-              <el-select
-                v-model="blogForm.category_id"
-                clearable
-                placeholder="请选择分类"
-                style="width: 240px"
-              >
-                <el-option
-                  v-for="category in categories"
-                  :key="category.id"
-                  :label="category.name"
-                  :value="category.id"
-                />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="文章标签" class="mt-4">
-              <div class="flex gap-2">
-                <el-tag
-                  v-for="tag in pickTags"
-                  :key="tag"
-                  closable
-                  :disable-transitions="false"
-                  @close="handleClose(tag)"
-                >
-                  {{ tag.name }}
-                </el-tag>
+              <div class="flex flex-col justify-between">
+                <div class="tip" v-if="has_error">
+                  {{ error_message.category_id }}
+                </div>
                 <el-select
-                  v-if="tagsSelectVisible"
-                  multiple
-                  filterable
-                  remote
-                  reserve-keyword
-                  placeholder="请输入标签名"
-                  :remote-method="searchTag"
-                  @change="selectTags"
-                  :loading="loading"
-                  size="small"
-                  style="width: 140px"
+                  v-model="blogForm.category_id"
+                  clearable
+                  placeholder="请选择分类"
+                  style="width: 240px"
                 >
                   <el-option
-                    v-for="tag in searchTags"
-                    :key="tag.id"
-                    :label="tag.name"
-                    :value="tag.id"
+                    v-for="category in categories"
+                    :key="category.id"
+                    :label="category.name"
+                    :value="category.id"
                   />
                 </el-select>
-                <el-button
-                  v-else
-                  class="button-new-tag"
-                  size="small"
-                  @click="showTagsSelect"
-                >
-                  + 新标签
-                </el-button>
+              </div>
+            </el-form-item>
+            <el-form-item label="文章标签" class="mt-4">
+              <div class="flex flex-col justify-between">
+                <div class="tip" v-if="has_error">
+                  {{ error_message.tags_ids }}
+                </div>
+                <div class="flex gap-2">
+                  <el-tag
+                    v-for="tag in pickTags"
+                    :key="tag"
+                    closable
+                    :disable-transitions="false"
+                    @close="handleClose(tag)"
+                  >
+                    {{ tag.name }}
+                  </el-tag>
+                  <el-select
+                    v-if="tagsSelectVisible"
+                    multiple
+                    filterable
+                    remote
+                    reserve-keyword
+                    placeholder="请输入标签名"
+                    :remote-method="searchTag"
+                    @change="selectTags"
+                    :loading="loading"
+                    size="small"
+                    style="width: 140px"
+                  >
+                    <el-option
+                      v-for="tag in searchTags"
+                      :key="tag.id"
+                      :label="tag.name"
+                      :value="tag.id"
+                    />
+                  </el-select>
+                  <el-button
+                    v-else
+                    class="button-new-tag"
+                    size="small"
+                    @click="showTagsSelect"
+                  >
+                    + 新标签
+                  </el-button>
+                </div>
               </div>
             </el-form-item>
             <el-form-item label="是否推荐" class="mt-4">
@@ -262,6 +360,7 @@ const publish = async () => {
         <div class="step2" v-show="activeStep === 2">
           <el-form label-position="top">
             <el-form-item label="标题">
+              <div class="tip" v-if="has_error">{{ error_message.title }}</div>
               <el-input
                 v-model="blogForm.title"
                 placeholder="请输入标题"
@@ -269,6 +368,7 @@ const publish = async () => {
               />
             </el-form-item>
             <el-form-item label="简介">
+              <div class="tip" v-if="has_error">{{ error_message.intro }}</div>
               <el-input
                 v-model="blogForm.intro"
                 :rows="3"
@@ -280,6 +380,9 @@ const publish = async () => {
               label="正文"
               style="height: calc(100vh - 200px); overflow-y: auto"
             >
+              <div class="tip" v-if="has_error">
+                {{ error_message.content }}
+              </div>
               <editor
                 class="h-full"
                 :model-value="blogForm.content"
@@ -289,10 +392,61 @@ const publish = async () => {
           </el-form>
         </div>
         <div class="step3" v-show="activeStep === 3">
-          <div class="review">
-            预览效果：
-            <div v-dompurify-html="blogForm.content"></div>
+          <div
+            class="review"
+            v-if="blogForm.title !== '' && blogForm.content !== ''"
+          >
+            <div class="mb-2">预览效果：</div>
+            <el-card>
+              <!--              <template #header>-->
+              <!--                <h2 class="text-center">{{ blogForm.title }}</h2>-->
+              <!--              </template>-->
+              <!--              <div v-dompurify-html="blogForm.content"></div>-->
+              <div class="review-container">
+                <h2 class="blog-title">{{ blogForm.title }}</h2>
+                <div class="blog-info">
+                  <div class="create-data">发表时间: 2024-02-26</div>
+                  <div class="words-num">
+                    字数: {{ blogForm.content.length }}字
+                  </div>
+                  <div class="words-num">阅读时长: 1分钟</div>
+                </div>
+
+                <div
+                  class="blog-content"
+                  id="content"
+                  v-dompurify-html="blogForm.content"
+                ></div>
+                <el-divider />
+                <div class="blog-tags">
+                  <div class="flex gap-2 mb-4">
+                    <el-tag
+                      v-for="tag in pickTags"
+                      :key="tag.id"
+                      effect="light"
+                      round
+                      type="primary"
+                    >
+                      {{ tag.name }}
+                    </el-tag>
+                  </div>
+                </div>
+                <div class="author-info">
+                  <ul>
+                    <!--TODO 请求用户信息-->
+                    <li>1 作者：xxx （联系作者）</li>
+                    <li>2 发表时间：2024-02-26 00:09</li>
+                    <li>3 最后修改：2024-02-26 00:09</li>
+                    <li>
+                      4 本站点采用 署名 4.0 国际 (CC BY 4.0)
+                      创作共享协议。可自由转载、引用，并且允许商业性使用。但需署名作者且注明文章出处。
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </el-card>
           </div>
+          <el-empty v-else description="暂无可预览效果" />
         </div>
       </template>
       <template #footer>
@@ -308,4 +462,62 @@ const publish = async () => {
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.tip {
+  height: fit-content;
+  padding: 0;
+  margin: 0;
+  font-size: 0.8rem;
+  color: #f40;
+}
+
+.review-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+
+  .blog-title {
+    text-align: center;
+  }
+
+  .blog-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin: 0 auto;
+    font-size: 14px;
+    color: gray;
+
+    & > div {
+      padding: 12px 8px;
+    }
+  }
+
+  .blog-content {
+    margin-bottom: 12px;
+  }
+
+  .author-info {
+    padding: 10px;
+    font-size: 14px;
+    color: #2c662d;
+    background-color: #fcfff5;
+    border: 1px solid #00b5ad;
+    border-bottom: 2px solid #00b5ad;
+
+    ul {
+      display: flex;
+      flex-direction: column;
+      justify-content: start;
+      list-style: none;
+
+      li {
+        margin-bottom: 4px;
+      }
+    }
+  }
+}
+</style>

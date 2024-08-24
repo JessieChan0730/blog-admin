@@ -403,6 +403,16 @@ const reset = () => {
             <!--TODO 博客列表-->
             <el-row>
               <el-col
+                :lg="24"
+                v-if="
+                  blogStore.articleListVo.results &&
+                  blogStore.articleListVo.results.length === 0
+                "
+              >
+                <el-empty :image-size="200" description="暂无数据" />
+              </el-col>
+              <el-col
+                v-else
                 :lg="12"
                 class="px-1"
                 v-for="blog in blogStore.articleListVo.results"
