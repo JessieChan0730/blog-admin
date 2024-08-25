@@ -36,7 +36,7 @@ export interface MediaLink {
   tiktok: string;
 }
 
-interface User {
+export interface User {
   /** 用户ID */
   id: number;
   /** 用户名 */

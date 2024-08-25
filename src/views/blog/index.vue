@@ -429,17 +429,29 @@ const reset = () => {
                         </el-icon>
                         {{ blog.title }}
                       </el-link>
-                      <el-icon v-if="blog.visible" class="mx-0.5" :size="14">
-                        <View />
-                      </el-icon>
-                      <el-icon v-else class="mx-0.5" :size="14">
-                        <Hide />
-                      </el-icon>
+                      <el-tooltip
+                        class="box-item"
+                        effect="dark"
+                        :content="blog.visible ? `文章可见` : `文章不可见`"
+                        placement="top"
+                      >
+                        <el-icon v-if="blog.visible" class="mx-0.5" :size="14">
+                          <View />
+                        </el-icon>
+                        <el-icon v-else class="mx-0.5" :size="14">
+                          <Hide />
+                        </el-icon>
+                      </el-tooltip>
                     </div>
                   </template>
                   <template #default>
                     <div class="cover intro">
                       <el-image
+                        :zoom-rate="1.2"
+                        :max-scale="7"
+                        :min-scale="0.2"
+                        :preview-src-list="[blog.cover_url]"
+                        :initial-index="4"
                         class="w-full mb-2 h-220px"
                         :src="blog.cover_url"
                         fit="fill"

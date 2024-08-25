@@ -1,7 +1,7 @@
 import request from "@/utils/request";
 import { CategoryVo } from "@/api/category";
 import { TagsVO } from "@/api/tags";
-import User from "@/api/user";
+import { User } from "@/api/user";
 import { Pagination } from "@/api/pagination";
 
 const ARTICLE_URL = "/api/article";
@@ -23,6 +23,31 @@ export class ArticleAPI {
         "Content-Type": "application/json",
       },
       data,
+    });
+  }
+
+  static getArticleById(id: string | number) {
+    return request<any, BlogVo>({
+      url: `${ARTICLE_URL}/${id}/`,
+      method: "get",
+    });
+  }
+
+  static modifyArticle(id: number | string, data: BlogForm) {
+    return request<any, BlogVo>({
+      url: `${ARTICLE_URL}/${id}/modify/`,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "post",
+      data,
+    });
+  }
+
+  static deleteArticle(id: number | string) {
+    return request<any, null>({
+      url: `${ARTICLE_URL}/${id}/`,
+      method: "delete",
     });
   }
 }
@@ -60,17 +85,31 @@ export interface BlogListVo {
 }
 
 export interface BlogForm {
-  cover_url: string;
-  title: string;
-  intro: string;
-  content: string;
-  recommend: boolean;
-  visible: boolean;
-  category_id: number | null;
-  tags_ids: number[];
+  cover_url?: string;
+  title?: string;
+  intro?: string;
+  content?: string;
+  recommend?: boolean;
+  visible?: boolean;
+  category_id?: number | null;
+  tags_ids?: number[];
 }
 
-export interface CoverVo {
-  id: number;
-  cover: string;
+export interface BLogPreview {
+  title: string;
+  content: string;
+  intro: string;
+  tags: TagsVO[];
+  author: User;
+  create_date: string;
+  update_date: string;
+}
+
+export interface BLogManage {
+  title: string;
+  cover_url: string;
+  recommend: boolean;
+  visible: boolean;
+  category: number;
+  tags: TagsVO[];
 }

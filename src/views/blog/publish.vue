@@ -92,18 +92,30 @@ watch(
   }
 );
 
+const content_length = computed(() => {
+  return blogForm.content?.replace(/<[^>]+>/g, "").length || 0;
+});
+
+const reading_time = computed(() => {
+  const minutes = content_length.value / 250;
+  if (minutes < 1) {
+    return "<1";
+  }
+  return Math.round(minutes).toString();
+});
+
 // 验证表单数据
 const verify = () => {
   let errors_count = 0;
   resetErrorMessage();
-  const title_length = blogForm.title.trim().length;
-  const intro_length = blogForm.intro.trim().length;
-  const content_length = blogForm.content.trim().length;
+  const title_length = blogForm.title?.trim().length || 0;
+  const intro_length = blogForm.intro?.trim().length || 0;
+  const content_length = blogForm.content?.trim().length || 0;
   if (blogForm.cover_url === "") {
     error_message.cover_url = "必须选择一个封面";
     errors_count++;
   }
-  if (blogForm.tags_ids.length == 0) {
+  if (blogForm.tags_ids?.length == 0) {
     error_message.tags_ids = "请为文章选择一些标签";
     errors_count++;
   }
@@ -192,7 +204,6 @@ const uploadSuccess = (
   uploadFile: UploadFile,
   uploadFiles: UploadFiles
 ) => {
-  console.log(response);
   const { code, data } = response;
   if (code === 201) {
     const { cover } = data;
@@ -233,6 +244,17 @@ const publish = async () => {
     });
   }
 };
+// 获取当前格式化数据
+function formatDate(date = new Date()) {
+  let year = date.getFullYear();
+  let month = String(date.getMonth() + 1).padStart(2, "0"); // 月份是从0开始的
+  let day = String(date.getDate()).padStart(2, "0");
+  let hours = String(date.getHours()).padStart(2, "0");
+  let minutes = String(date.getMinutes()).padStart(2, "0");
+  let seconds = String(date.getSeconds()).padStart(2, "0");
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
 </script>
 
 <template>
@@ -384,7 +406,7 @@ const publish = async () => {
                 {{ error_message.content }}
               </div>
               <editor
-                class="h-full"
+                class="h-full w-full"
                 :model-value="blogForm.content"
                 @update:model-value="updateContent"
               />
@@ -398,22 +420,16 @@ const publish = async () => {
           >
             <div class="mb-2">预览效果：</div>
             <el-card>
-              <!--              <template #header>-->
-              <!--                <h2 class="text-center">{{ blogForm.title }}</h2>-->
-              <!--              </template>-->
-              <!--              <div v-dompurify-html="blogForm.content"></div>-->
               <div class="review-container">
                 <h2 class="blog-title">{{ blogForm.title }}</h2>
                 <div class="blog-info">
-                  <div class="create-data">发表时间: 2024-02-26</div>
-                  <div class="words-num">
-                    字数: {{ blogForm.content.length }}字
-                  </div>
-                  <div class="words-num">阅读时长: 1分钟</div>
+                  <div class="create-data">发表时间: {{ formatDate() }}</div>
+                  <div class="words-num">字数: {{ content_length }}字</div>
+                  <div class="words-num">阅读时长: {{ reading_time }}分钟</div>
                 </div>
 
                 <div
-                  class="blog-content"
+                  class="blog-content w-full"
                   id="content"
                   v-dompurify-html="blogForm.content"
                 ></div>
@@ -435,8 +451,8 @@ const publish = async () => {
                   <ul>
                     <!--TODO 请求用户信息-->
                     <li>1 作者：xxx （联系作者）</li>
-                    <li>2 发表时间：2024-02-26 00:09</li>
-                    <li>3 最后修改：2024-02-26 00:09</li>
+                    <li>2 发表时间：{{ formatDate() }}</li>
+                    <li>3 最后修改：{{ formatDate() }}</li>
                     <li>
                       4 本站点采用 署名 4.0 国际 (CC BY 4.0)
                       创作共享协议。可自由转载、引用，并且允许商业性使用。但需署名作者且注明文章出处。
@@ -462,62 +478,4 @@ const publish = async () => {
   </div>
 </template>
 
-<style scoped lang="scss">
-.tip {
-  height: fit-content;
-  padding: 0;
-  margin: 0;
-  font-size: 0.8rem;
-  color: #f40;
-}
-
-.review-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: start;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-
-  .blog-title {
-    text-align: center;
-  }
-
-  .blog-info {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    margin: 0 auto;
-    font-size: 14px;
-    color: gray;
-
-    & > div {
-      padding: 12px 8px;
-    }
-  }
-
-  .blog-content {
-    margin-bottom: 12px;
-  }
-
-  .author-info {
-    padding: 10px;
-    font-size: 14px;
-    color: #2c662d;
-    background-color: #fcfff5;
-    border: 1px solid #00b5ad;
-    border-bottom: 2px solid #00b5ad;
-
-    ul {
-      display: flex;
-      flex-direction: column;
-      justify-content: start;
-      list-style: none;
-
-      li {
-        margin-bottom: 4px;
-      }
-    }
-  }
-}
-</style>
+<style scoped lang="scss"></style>

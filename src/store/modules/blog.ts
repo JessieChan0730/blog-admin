@@ -1,5 +1,12 @@
 import { store, useUserStore } from "@/store";
-import { ArticleAPI, BlogListVo, BlogVo, QueryParams } from "@/api/blog";
+import {
+  ArticleAPI,
+  BlogListVo,
+  BLogManage,
+  BLogPreview,
+  BlogVo,
+  QueryParams,
+} from "@/api/blog";
 import { Pagination } from "@/api/pagination";
 
 export const useBlogStore = defineStore("blog", () => {
@@ -29,6 +36,41 @@ export const useBlogStore = defineStore("blog", () => {
     });
   }
 
+  function articleManageVo(id: number | string) {
+    const articleManage: BLogManage | undefined = articleList.results
+      .filter((article) => article.id == id)
+      .map((article) => {
+        return {
+          title: article.title,
+          cover_url: article.cover_url,
+          recommend: article.recommend,
+          visible: article.visible,
+          category: article.category.id,
+          tags: article.tags,
+        };
+      })
+      .pop();
+    return articleManage;
+  }
+
+  function articlePreviewVo(id: number | string) {
+    const articlePreview: BLogPreview | undefined = articleList.results
+      .filter((article) => article.id == id)
+      .map((article) => {
+        return {
+          title: article.title,
+          content: article.content,
+          intro: article.intro,
+          tags: article.tags,
+          author: article.author,
+          create_date: article.create_date,
+          update_date: article.update_date,
+        };
+      })
+      .pop();
+    return articlePreview;
+  }
+
   const articleListVo = computed<Pagination<BlogListVo>>(() => {
     const articles = articleList.results.map((article) => {
       return {
@@ -50,6 +92,8 @@ export const useBlogStore = defineStore("blog", () => {
 
   return {
     init,
+    articlePreviewVo,
+    articleManageVo,
     articleListVo,
   };
 });
