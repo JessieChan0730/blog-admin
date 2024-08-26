@@ -138,7 +138,6 @@ export const constantRoutes: RouteRecordRaw[] = [
       },
     ],
   },
-
   {
     path: "/tag",
     component: Layout,
@@ -149,7 +148,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "tags",
         component: () => import("@/views/tags/index.vue"),
         meta: {
-          title: "博客标签",
+          title: "标签管理",
           icon: "el-icon-CollectionTag",
           keepAlive: true,
         },
@@ -166,8 +165,37 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "category",
         component: () => import("@/views/category/index.vue"),
         meta: {
-          title: "博客分类",
+          title: "分类管理",
           icon: "menu",
+          keepAlive: true,
+        },
+      },
+    ],
+  },
+  {
+    path: "/other",
+    component: Layout,
+    redirect: "/other/friendlink",
+    meta: {
+      title: "其他页面",
+      icon: "el-icon-Document",
+    },
+    children: [
+      {
+        path: "friendlink",
+        name: "friendlink",
+        component: () => import("@/views/other/friendLink.vue"),
+        meta: {
+          title: "友情链接",
+          keepAlive: true,
+        },
+      },
+      {
+        path: "photowall",
+        name: "photowall",
+        component: () => import("@/views/other/photoWall.vue"),
+        meta: {
+          title: "照片墙",
           keepAlive: true,
         },
       },

@@ -87,7 +87,7 @@ watch([name, page], async () => {
 // 展示dialog
 const showDialog = (type: DType, row?: any) => {
   if (type == DType.Edit) {
-    dialogInfo.title = "编分类";
+    dialogInfo.title = "编辑分类";
     // 初始化dialog中编辑框的内容
     categoryForm.name = row.name;
     categoryForm.display = row.display;
@@ -166,13 +166,13 @@ const loadCategoryData = async (params?: QueryParams) => {
 const deleteCategory = async (id: number | string) => {
   await CategoryAPI.deleteCategory(id);
   // 手动刷新当页页面
-  loadCategoryData(queryParams);
+  await loadCategoryData(queryParams);
 };
 // 删除多个category
 const deleteCategories = async () => {
   await CategoryAPI.deleteCategories(ids.value);
   // 手动刷新当页页面
-  loadCategoryData(queryParams);
+  await loadCategoryData(queryParams);
 };
 // 搜索
 const search = () => {
