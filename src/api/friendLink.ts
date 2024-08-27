@@ -4,10 +4,11 @@ import { Pagination } from "@/api/pagination";
 const FRIEND_LINK_BASE_URL = "/api/link";
 
 export class FriendLinkAPI {
-  static getALlLink() {
+  static getALlLink(params?: FLinkQueryParams) {
     return request<any, Pagination<FriendLink>>({
       url: `${FRIEND_LINK_BASE_URL}/`,
       method: "get",
+      params,
     });
   }
 
@@ -33,15 +34,23 @@ export class FriendLinkAPI {
     });
   }
 
-  static deleteALlLink(id: number | string) {
+  static deleteLink(id: number | string) {
     return request<any, null>({
       url: `${FRIEND_LINK_BASE_URL}/${id}/`,
       method: "delete",
     });
   }
+  static deleteMultipleLinks(ids: number[]) {
+    return request<any, null>({
+      url: `${FRIEND_LINK_BASE_URL}/multiple/`,
+      method: "delete",
+      data: {
+        ids,
+      },
+    });
+  }
 }
 export enum Status {
-  ALL = "ALL",
   PENDING = "pending",
   ON_SHELF = "on_shelf",
   OFF_SHELF = "off_shelf",

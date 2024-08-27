@@ -8,6 +8,7 @@ import {
   Status,
 } from "@/api/friendLink";
 import { FormInstance, type FormRules } from "element-plus";
+import type { CategoryVo } from "@/api/category";
 
 type selectStatus = {
   name: String;
@@ -106,7 +107,7 @@ const friendLinkPagination = reactive<Pagination<FriendLink>>({
 
 let queryParams = reactive<FLinkQueryParams>({
   page: 1,
-  status: Status.ALL,
+  status: undefined,
   name: "",
 });
 
@@ -118,7 +119,13 @@ const linkForm = reactive<FriendLink>({
   email: "",
   link: "",
 });
+// 表格加载数据
+const loading = ref(false);
 
+const searchName = ref("");
+const searchStatus = ref<Status>();
+
+const selectedLink = ref<FriendLink[]>([]);
 // 表单实例
 const ruleFormRef = ref<FormInstance>();
 // 分页组件状态
@@ -126,10 +133,6 @@ const pageSize = ref(5);
 const disabled = ref(false);
 const background = ref(true);
 const statuses = ref<selectStatus[]>([
-  {
-    name: "全部",
-    status: Status.ALL,
-  },
   {
     name: "未审核",
     status: Status.PENDING,
@@ -149,14 +152,30 @@ onMounted(() => {
   loadFriendLinks();
 });
 
-const loadFriendLinks = async () => {
-  const response = await FriendLinkAPI.getALlLink();
+watch(
+  [() => queryParams.name, () => queryParams.page, () => queryParams.status],
+  async () => {
+    await loadFriendLinks(queryParams);
+  }
+);
+
+// TODO 此处的计算属性是否可以不需要
+const ids = computed(() => {
+  return selectedLink.value.map((link) => {
+    return link.id;
+  });
+});
+
+const loadFriendLinks = async (params?: FLinkQueryParams) => {
+  loading.value = true;
+  const response = await FriendLinkAPI.getALlLink(params);
   if (response) {
     friendLinkPagination.count = response.count;
     friendLinkPagination.next = response.next;
     friendLinkPagination.previous = response.previous;
     friendLinkPagination.results = response.results;
   }
+  loading.value = false;
 };
 
 const handleCurrentChange = (currentPage: number) => {
@@ -247,8 +266,39 @@ const commit = async (formEl: FormInstance | undefined) => {
 };
 // 删除当个链接
 const deleteLink = async (id: number | string) => {
-  await FriendLinkAPI.deleteALlLink(id);
+  await FriendLinkAPI.deleteLink(id);
   await loadFriendLinks();
+};
+
+// 删除多个标签
+const deleteFriendLinks = async () => {
+  if (ids.value.length !== 0) {
+    await FriendLinkAPI.deleteMultipleLinks(ids.value as number[]);
+    await loadFriendLinks();
+  } else {
+    ElMessage.error("请框选对应的链接");
+  }
+};
+
+// 表格选择改变
+const selectChange = (newSelection: FriendLink[]) => {
+  selectedLink.value = newSelection;
+};
+
+// 搜索
+const search = () => {
+  queryParams.name = searchName.value;
+  queryParams.status = searchStatus.value;
+  queryParams.page = 1;
+};
+
+// 重置
+const reset = () => {
+  queryParams.name = "";
+  queryParams.status = undefined;
+  queryParams.page = 1;
+  searchName.value = "";
+  searchStatus.value = undefined;
 };
 </script>
 
@@ -260,7 +310,7 @@ const deleteLink = async (id: number | string) => {
           <el-input
             placeholder="请输入友链名称"
             clearable
-            v-model="queryParams.name"
+            v-model="searchName"
           />
         </el-form-item>
         <el-form-item label="状态">
@@ -268,7 +318,7 @@ const deleteLink = async (id: number | string) => {
             placeholder="友链状态"
             size="default"
             style="width: 100px"
-            v-model="queryParams.status"
+            v-model="searchStatus"
           >
             <el-option
               v-for="(status, index) in statuses"
@@ -279,11 +329,11 @@ const deleteLink = async (id: number | string) => {
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">
+          <el-button type="primary" @click="search">
             <i-ep-search />
             搜索
           </el-button>
-          <el-button>
+          <el-button @click="reset">
             <i-ep-refresh />
             重置
           </el-button>
@@ -300,9 +350,10 @@ const deleteLink = async (id: number | string) => {
           cancel-button-text="取消"
           :icon="InfoFilled"
           icon-color="#f40"
-          title="你确定要删除这些标签吗？"
+          title="你确定要删除这些链接吗？"
           width="220"
           confirm-button-type="danger"
+          @confirm="deleteFriendLinks"
         >
           <template #reference>
             <el-button type="danger" :icon="Delete">删除</el-button>
@@ -310,10 +361,12 @@ const deleteLink = async (id: number | string) => {
         </el-popconfirm>
       </template>
       <el-table
+        v-loading="loading"
         border
         style="width: 100%"
         stripe
         :data="friendLinkPagination.results"
+        @selection-change="selectChange"
       >
         <el-table-column align="center" type="selection" width="55" />
         <el-table-column align="center" property="id" label="ID" width="60" />
@@ -394,7 +447,7 @@ const deleteLink = async (id: number | string) => {
               cancel-button-text="取消"
               :icon="InfoFilled"
               icon-color="#f40"
-              title="你确定要删除这个标签吗？"
+              title="你确定要删除这个链接吗？"
               width="220"
               confirm-button-type="danger"
               @confirm="deleteLink(prop.row.id)"

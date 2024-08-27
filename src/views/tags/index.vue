@@ -4,6 +4,7 @@ import type { Pagination } from "@/api/pagination";
 import { onMounted } from "vue";
 import type { FormRules, FormInstance } from "element-plus";
 import { Delete, InfoFilled, Plus } from "@element-plus/icons-vue";
+import { FriendLinkAPI } from "@/api/friendLink";
 
 enum DType {
   Add,
@@ -149,9 +150,13 @@ const deleteTag = async (id: number | string) => {
 };
 // 删除多个tag
 const deleteTags = async () => {
-  await TagsAPI.deleteTags(ids.value);
-  // 刷新当页数据
-  loadTagsData(currentPage.value);
+  if (ids.value.length !== 0) {
+    await TagsAPI.deleteTags(ids.value);
+    // 刷新当页数据
+    await loadTagsData(currentPage.value);
+  } else {
+    ElMessage.error("请框选对应的链接");
+  }
 };
 
 const selectChange = (newSelection: TagsVO[]) => {

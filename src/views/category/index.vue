@@ -4,6 +4,7 @@ import type { Pagination } from "@/api/pagination";
 import type { CategoryForm, CategoryVo, QueryParams } from "@/api/category";
 import { CategoryAPI } from "@/api/category";
 import type { FormInstance, FormRules } from "element-plus";
+import { FriendLinkAPI } from "@/api/friendLink";
 
 enum DType {
   Add,
@@ -170,9 +171,13 @@ const deleteCategory = async (id: number | string) => {
 };
 // 删除多个category
 const deleteCategories = async () => {
-  await CategoryAPI.deleteCategories(ids.value);
-  // 手动刷新当页页面
-  await loadCategoryData(queryParams);
+  if (ids.value.length !== 0) {
+    await CategoryAPI.deleteCategories(ids.value);
+    // 手动刷新当页页面
+    await loadCategoryData(queryParams);
+  } else {
+    ElMessage.error("请框选对应的链接");
+  }
 };
 // 搜索
 const search = () => {
