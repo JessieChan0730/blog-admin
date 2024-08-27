@@ -158,7 +158,7 @@ const cancel = () => {
         </div>
 
         <div
-          class="blog-content"
+          class="blog-content editor-content-view"
           id="content"
           v-dompurify-html="blog.content"
         ></div>

@@ -429,7 +429,7 @@ function formatDate(date = new Date()) {
                 </div>
 
                 <div
-                  class="blog-content w-full"
+                  class="blog-content w-full editor-content-view"
                   id="content"
                   v-dompurify-html="blogForm.content"
                 ></div>

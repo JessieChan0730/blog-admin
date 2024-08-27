@@ -5,10 +5,11 @@ import {
   FLinkQueryParams,
   FriendLink,
   FriendLinkAPI,
+  FriendLinkStatementAPI,
   Status,
 } from "@/api/friendLink";
 import { FormInstance, type FormRules } from "element-plus";
-import type { CategoryVo } from "@/api/category";
+import Editor from "@/components/WangEditor/index.vue";
 
 type selectStatus = {
   name: String;
@@ -121,7 +122,8 @@ const linkForm = reactive<FriendLink>({
 });
 // 表格加载数据
 const loading = ref(false);
-
+const statement = ref("");
+const new_statement = ref("");
 const searchName = ref("");
 const searchStatus = ref<Status>();
 
@@ -150,6 +152,7 @@ const page = toRef(queryParams, "page");
 
 onMounted(() => {
   loadFriendLinks();
+  loadStatement();
 });
 
 watch(
@@ -177,7 +180,12 @@ const loadFriendLinks = async (params?: FLinkQueryParams) => {
   }
   loading.value = false;
 };
-
+const loadStatement = async () => {
+  const response = await FriendLinkStatementAPI.getStatement();
+  if (response) {
+    statement.value = response.statement;
+  }
+};
 const handleCurrentChange = (currentPage: number) => {
   page.value = currentPage;
 };
@@ -299,6 +307,21 @@ const reset = () => {
   queryParams.page = 1;
   searchName.value = "";
   searchStatus.value = undefined;
+};
+
+const updateContent = (content: string) => {
+  new_statement.value = content;
+};
+
+const saveStatement = async () => {
+  const response = await FriendLinkStatementAPI.changeStatement(
+    new_statement.value
+  );
+  if (response) {
+    statement.value = response.statement;
+    // statement.value = '<p><span style="color:rgb(255,173,210);background-color:rgb(255,77,79);">随机排序，不分先后。欢迎交换友链(￣▽￣)*</span></p><ol><li>昵称：Naccl</li><li>一句话：游龙当归海，海不迎我自来也。</li><li>网址：https://naccl.top</li><li>头像URL：https://naccl.top/img/avatar.jpg</li></ol><p>仅凭个人喜好添加友链，请在收到我的回复邮件后再于贵站添加本站链接。原则上已添加的友链不会删除，如果你发现自己被移除了，恕不另行通知，只需和我一样做就好。</p><p><imgsrc=\\"\\\\\\"http://localhost:8000/media/article/content/57137f5303914794a35b6576278b448a/GIT.png\\\\\\"alt=\\\\\\"\\\\\\"data-href=\\\\\\"\\\\\\"style=\\\\\\"\\\\\\"/\\"alt=\\"\\"data-href=\\"\\"style=\\"\\"/></p>';
+    ElMessage.success("保存成功");
+  }
 };
 </script>
 
@@ -473,6 +496,35 @@ const reset = () => {
         />
       </template>
     </el-card>
+    <div class="footer-container">
+      <el-text>友链页面信息</el-text>
+      <el-tabs type="border-card" class="my-2">
+        <el-tab-pane>
+          <template #label>
+            <span class="flex flex-row items-center">
+              <el-icon class="mr-1"><View /></el-icon>
+              <span>预览</span>
+            </span>
+          </template>
+          <div class="editor-content-view" v-dompurify-html="statement"></div>
+        </el-tab-pane>
+        <el-tab-pane>
+          <template #label>
+            <span class="flex flex-row items-center">
+              <el-icon class="mr-1"><Edit /></el-icon>
+              <span>编辑</span>
+            </span>
+          </template>
+          <editor
+            class="h-full w-full"
+            :model-value="statement"
+            @update:model-value="updateContent"
+          />
+          <el-divider />
+          <el-button type="primary" @click="saveStatement">保存</el-button>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
     <!--    Dialog-->
     <el-dialog
       @close="closeDialog"
@@ -524,4 +576,4 @@ const reset = () => {
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style lang="scss"></style>
