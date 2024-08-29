@@ -414,7 +414,7 @@ const reset = () => {
               <el-col
                 v-else
                 :lg="12"
-                class="px-1"
+                class="px-1 mb-1"
                 v-for="blog in blogStore.articleListVo.results"
                 :key="blog.id"
               >

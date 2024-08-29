@@ -199,6 +199,15 @@ export const constantRoutes: RouteRecordRaw[] = [
           keepAlive: true,
         },
       },
+      {
+        path: "about",
+        name: "about",
+        component: () => import("@/views/other/about.vue"),
+        meta: {
+          title: "关于本站",
+          keepAlive: true,
+        },
+      },
     ],
   },
   {
