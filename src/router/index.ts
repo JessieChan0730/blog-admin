@@ -12,7 +12,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     children: [
       {
         path: "/redirect/:path(.*)",
-        component: () => import("@/views/setting/index.vue"),
+        component: () => import("@/views/redirect/index.vue"),
       },
     ],
   },
@@ -58,14 +58,28 @@ export const constantRoutes: RouteRecordRaw[] = [
   {
     path: "/setting",
     component: Layout,
-    redirect: "/setting/home",
+    redirect: "/setting/front",
+    meta: {
+      title: "网站设置",
+      icon: "el-icon-Setting",
+    },
     children: [
       {
-        path: "home",
-        name: "meta",
-        component: () => import("@/views/setting/index.vue"),
+        path: "front",
+        name: "front",
+        component: () => import("@/views/setting/front.vue"),
         meta: {
-          title: "网站设置",
+          title: "前台设置",
+          icon: "el-icon-Setting",
+          keepAlive: true,
+        },
+      },
+      {
+        path: "admin",
+        name: "admin",
+        component: () => import("@/views/setting/admin.vue"),
+        meta: {
+          title: "后台设置",
           icon: "el-icon-Setting",
           keepAlive: true,
         },
