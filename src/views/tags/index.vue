@@ -4,7 +4,7 @@ import type { Pagination } from "@/api/pagination";
 import { onMounted } from "vue";
 import type { FormRules, FormInstance } from "element-plus";
 import { Delete, InfoFilled, Plus } from "@element-plus/icons-vue";
-import { FriendLinkAPI } from "@/api/friendLink";
+import { PaginationType, useGetPageSize } from "@/hooks/settings";
 
 enum DType {
   Add,
@@ -52,12 +52,13 @@ const currentPage = ref(1);
 const disabled = ref(false);
 const background = ref(true);
 const ruleFormRef = ref<FormInstance>();
-const pageSize = ref(5);
+const pageSize = ref(0);
 // 选中的tags
 const selectTags = ref<TagsVO[]>([]);
 // 请求数据
-onMounted(() => {
-  loadTagsData(1);
+onMounted(async () => {
+  await loadTagsData(1);
+  pageSize.value = await useGetPageSize(PaginationType.Tags);
 });
 /**
  * 计算属性

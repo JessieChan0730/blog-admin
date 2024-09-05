@@ -4,7 +4,7 @@ import type { Pagination } from "@/api/pagination";
 import type { CategoryForm, CategoryVo, QueryParams } from "@/api/category";
 import { CategoryAPI } from "@/api/category";
 import type { FormInstance, FormRules } from "element-plus";
-import { FriendLinkAPI } from "@/api/friendLink";
+import { PaginationType, useGetPageSize } from "@/hooks/settings";
 
 enum DType {
   Add,
@@ -57,7 +57,7 @@ const categoryFormRuler = reactive<FormRules<CategoryForm>>({
 const name = toRef(queryParams, "name");
 const page = toRef(queryParams, "page");
 // 分页组件状态
-const pageSize = ref(5);
+const pageSize = ref(0);
 const disabled = ref(false);
 const background = ref(true);
 // 搜索的内容
@@ -70,7 +70,7 @@ const ruleFormRef = ref<FormInstance>();
 const selectCategories = ref<CategoryVo[]>([]);
 // 挂载时，加载第一页数据
 onMounted(() => {
-  loadCategoryData();
+  init();
 });
 // 计算属性
 const ids = computed(() => {
@@ -84,6 +84,11 @@ watch([name, page], async () => {
   await loadCategoryData(queryParams);
   loading.value = false;
 });
+
+const init = async () => {
+  pageSize.value = await useGetPageSize(PaginationType.Category);
+  await loadCategoryData();
+};
 
 // 展示dialog
 const showDialog = (type: DType, row?: any) => {

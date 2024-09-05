@@ -15,6 +15,7 @@ import {
   UploadRequestOptions,
 } from "element-plus";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
+import { PaginationType, useGetPageSize } from "@/hooks/settings";
 
 const search_content = ref("");
 const photo_ids = ref<number[]>([]);
@@ -62,6 +63,7 @@ const photoWallPagination = reactive<Pagination<PhotoWall>>({
 
 onMounted(async () => {
   await loadPhotos();
+  pageSize.value = await useGetPageSize(PaginationType.PhotoWall);
 });
 
 watch([() => queryParams.page, () => queryParams.description], async () => {

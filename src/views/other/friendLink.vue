@@ -10,6 +10,7 @@ import {
 } from "@/api/friendLink";
 import { FormInstance, type FormRules } from "element-plus";
 import Editor from "@/components/WangEditor/index.vue";
+import { PaginationType, useGetPageSize } from "@/hooks/settings";
 
 type selectStatus = {
   name: String;
@@ -131,7 +132,7 @@ const selectedLink = ref<FriendLink[]>([]);
 // 表单实例
 const ruleFormRef = ref<FormInstance>();
 // 分页组件状态
-const pageSize = ref(5);
+const pageSize = ref(0);
 const disabled = ref(false);
 const background = ref(true);
 const statuses = ref<selectStatus[]>([
@@ -150,9 +151,10 @@ const statuses = ref<selectStatus[]>([
 ]);
 const page = toRef(queryParams, "page");
 
-onMounted(() => {
-  loadFriendLinks();
-  loadStatement();
+onMounted(async () => {
+  pageSize.value = await useGetPageSize(PaginationType.FriendLink);
+  await loadFriendLinks();
+  await loadStatement();
 });
 
 watch(

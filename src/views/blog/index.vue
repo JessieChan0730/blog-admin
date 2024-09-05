@@ -14,6 +14,7 @@ import router from "@/router";
 import { useBlogStore } from "@/store";
 import { QueryParams } from "@/api/blog";
 import { CategoryAPI, CategoryVo } from "@/api/category";
+import { PaginationType, useGetPageSize } from "@/hooks/settings";
 
 const blogStore = useBlogStore();
 
@@ -73,7 +74,7 @@ const page = toRef(queryForm, "page");
 const category = toRef(queryForm, "category");
 
 // 页面大小
-const pageSize = ref(2);
+const pageSize = ref(0);
 const disabled = ref(false);
 const background = ref(true);
 const activeNames = ref([]);
@@ -90,12 +91,12 @@ const temp_search = ref("");
 const temp_category = ref();
 const temp_ordering = ref("");
 
-onMounted(() => {
-  getUserInfo();
-  blogStore.init(queryForm);
-  CategoryAPI.getAllCategory().then((data) => {
-    categoryOptions.value.push(...data);
-  });
+onMounted(async () => {
+  await getUserInfo();
+  await blogStore.init(queryForm);
+  const categories = await CategoryAPI.getAllCategory();
+  categoryOptions.value.push(...categories);
+  pageSize.value = await useGetPageSize(PaginationType.Blog);
 });
 
 watch([keyword, orderBy, page, category], () => {

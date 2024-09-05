@@ -131,9 +131,13 @@ const uploadError = () => {
 };
 
 const updateSetting = async () => {
-  await FrontSettingsAPI.putFrontSetting(frontSettingForms.value);
-  await frontSettingStore.refresh();
-  ElMessage.success("修改成功");
+  const response = await FrontSettingsAPI.putFrontSetting(
+    frontSettingForms.value
+  );
+  if (response) {
+    await frontSettingStore.refresh();
+    ElMessage.success("修改成功");
+  }
 };
 </script>
 
