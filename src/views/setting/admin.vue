@@ -1,31 +1,128 @@
 <script setup lang="ts">
-import { genFileId, UploadInstance, UploadRawFile } from "element-plus";
+import {
+  genFileId,
+  UploadFile,
+  UploadFiles,
+  UploadInstance,
+  UploadRawFile,
+} from "element-plus";
 import type { UploadProps } from "element-plus";
 import { Picture, Upload } from "@element-plus/icons-vue";
-import { MetaForm, MetaAPI } from "@/api/settings";
+import { AdminSetting, AdminSettingsAPI, Setting } from "@/api/settings";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
+import { useAdminSettings } from "@/store";
 
-const metaForm = reactive<MetaForm>({});
+const adminSettingStore = useAdminSettings();
+const adminSettingForms = ref<Setting[]>([]);
+const adminSetting = reactive<AdminSetting>(<AdminSetting>{
+  website_title: {
+    id: 0,
+    value: "",
+  },
+  website_logo: {
+    id: 0,
+    value: "",
+  },
+  record_info: {
+    id: 0,
+    value: "",
+  },
+  copyright: {
+    id: 0,
+    value: "",
+  },
+  category: {
+    page_size: {
+      id: 0,
+      value: "",
+    },
+    max_page_size: {
+      id: 0,
+      value: "",
+    },
+  },
+  tags: {
+    page_size: {
+      id: 0,
+      value: "",
+    },
+    max_page_size: {
+      id: 0,
+      value: "",
+    },
+  },
+  blog: {
+    page_size: {
+      id: 0,
+      value: "",
+    },
+    max_page_size: {
+      id: 0,
+      value: "",
+    },
+  },
+  friend_link: {
+    page_size: {
+      id: 0,
+      value: "",
+    },
+    max_page_size: {
+      id: 0,
+      value: "",
+    },
+  },
+  photo_wall: {
+    page_size: {
+      id: 0,
+      value: "",
+    },
+    max_page_size: {
+      id: 0,
+      value: "",
+    },
+  },
+});
 const uploadHeaders = reactive<Record<string, any>>({
   Authorization: localStorage.getItem(TOKEN_KEY),
 });
 
-const cover = ref<string>("");
-const uploadUrl = ref("http://127.0.0.1:8000/api/settings");
+const uploadUrl = ref("http://127.0.0.1:8000/api/settings/admin/logo/");
 const upload = ref<UploadInstance>();
 
-onMounted(() => {
-  getMeta();
+onMounted(async () => {
+  await init();
 });
 
-// 获取当前页面信息
-const getMeta = async () => {
-  const response = await MetaAPI.getMeta();
+const init = async () => {
+  const response = await adminSettingStore.get();
   if (response) {
-    cover.value = response.cover;
-    metaForm.title = response.title;
+    Object.assign(adminSetting, { ...response });
   }
 };
+
+// 使用watchEffect来监听frontSetting的变化
+watchEffect(() => {
+  // 遍历frontSetting对象，找到所有value属性
+  function traverse(obj: any) {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const value = obj[key];
+        // 检查是否直接包含value属性
+        if (
+          key === "value" &&
+          (typeof value === "string" || typeof value === "number")
+        ) {
+          adminSettingForms.value.push(obj);
+        } else if (typeof value === "object" && value !== null) {
+          // 递归检查对象
+          traverse(value);
+        }
+      }
+    }
+  }
+  adminSettingForms.value = [];
+  traverse(adminSetting);
+});
 
 // 文件触发上限的钩子
 const handleExceed: UploadProps["onExceed"] = (files) => {
@@ -40,23 +137,30 @@ const submitUpload = () => {
   upload.value!.submit();
 };
 
-const uploadSuccess = () => {
-  upload.value!.clearFiles();
-  getMeta();
+const uploadSuccess = (
+  response: any,
+  uploadFile: UploadFile,
+  uploadFiles: UploadFiles
+) => {
+  if (response) {
+    upload.value!.clearFiles();
+    adminSetting.website_logo.value = response.data.logo;
+    ElMessage.success("上传成功");
+  }
 };
 
 const uploadError = () => {
   ElMessage.error("上传失败");
 };
 
-const commit = async () => {
-  const { title } = await MetaAPI.updateMeta(metaForm);
-  // 如果用户上传了文件，则一起提交
-  if (upload.value) {
-    upload.value!.submit();
+const updateSetting = async () => {
+  const response = await AdminSettingsAPI.putAdminSetting(
+    adminSettingForms.value
+  );
+  if (response) {
+    await adminSettingStore.refresh();
+    ElMessage.success("修改成功");
   }
-  metaForm.title = title;
-  ElMessage.success("修改成功");
 };
 </script>
 
@@ -65,14 +169,17 @@ const commit = async () => {
     <el-card shadow="never" class="table-container">
       <el-tabs type="border-card">
         <el-tab-pane label="基础设置">
-          <el-form ref="ruleFormRef" :model="metaForm">
+          <el-form ref="ruleFormRef" :model="adminSetting">
             <el-form-item
               label="网站标题:"
               label-width="70px"
               label-position="top"
               prop="name"
             >
-              <el-input v-model="metaForm.title" placeholder="请输入网站标题" />
+              <el-input
+                v-model="adminSetting.website_title.value"
+                placeholder="请输入网站标题"
+              />
             </el-form-item>
             <el-form-item
               label="备案信息:"
@@ -81,7 +188,7 @@ const commit = async () => {
               prop="name"
             >
               <el-input
-                v-model="metaForm.title"
+                v-model="adminSetting.record_info.value"
                 placeholder="请输入网站的备案信息"
               />
             </el-form-item>
@@ -92,7 +199,7 @@ const commit = async () => {
               prop="name"
             >
               <el-input
-                v-model="metaForm.title"
+                v-model="adminSetting.copyright.value"
                 placeholder="请输入网站的版权信息（@Copyright）"
               />
             </el-form-item>
@@ -104,7 +211,7 @@ const commit = async () => {
             >
               <div class="cover-container">
                 <el-image
-                  :src="'http://127.0.0.1:8000/' + cover"
+                  :src="adminSetting.website_logo.value"
                   fit="contain"
                 />
               </div>
@@ -113,7 +220,7 @@ const commit = async () => {
                 ref="upload"
                 :action="uploadUrl"
                 :limit="1"
-                name="cover"
+                name="logo"
                 list-type="picture"
                 accept=".jpg,.png,.jpeg"
                 :multipl="false"
@@ -150,14 +257,20 @@ const commit = async () => {
             <template #default>
               <el-form
                 ref="ruleFormRef"
-                :model="metaForm"
+                :model="adminSetting"
                 label-position="left"
               >
                 <el-form-item label="每页展示:" prop="name">
-                  <el-input-number v-model="num" :min="1" :max="10" />
+                  <el-input-number
+                    v-model="adminSetting.category.page_size.value"
+                    :min="1"
+                  />
                 </el-form-item>
                 <el-form-item label="最大分页:" prop="name">
-                  <el-input-number v-model="num" :min="1" :max="10" />
+                  <el-input-number
+                    v-model="adminSetting.category.max_page_size.value"
+                    :min="1"
+                  />
                 </el-form-item>
               </el-form>
             </template>
@@ -169,14 +282,20 @@ const commit = async () => {
             <template #default>
               <el-form
                 ref="ruleFormRef"
-                :model="metaForm"
+                :model="adminSetting"
                 label-position="left"
               >
                 <el-form-item label="每页展示:" prop="name">
-                  <el-input-number v-model="num" :min="1" :max="10" />
+                  <el-input-number
+                    v-model="adminSetting.tags.page_size.value"
+                    :min="1"
+                  />
                 </el-form-item>
                 <el-form-item label="最大分页:" prop="name">
-                  <el-input-number v-model="num" :min="1" :max="10" />
+                  <el-input-number
+                    v-model="adminSetting.tags.max_page_size.value"
+                    :min="1"
+                  />
                 </el-form-item>
               </el-form>
             </template>
@@ -188,14 +307,20 @@ const commit = async () => {
             <template #default>
               <el-form
                 ref="ruleFormRef"
-                :model="metaForm"
+                :model="adminSetting"
                 label-position="left"
               >
                 <el-form-item label="每页展示:" prop="name">
-                  <el-input-number v-model="num" :min="1" :max="10" />
+                  <el-input-number
+                    v-model="adminSetting.blog.page_size.value"
+                    :min="1"
+                  />
                 </el-form-item>
                 <el-form-item label="最大分页:" prop="name">
-                  <el-input-number v-model="num" :min="1" :max="10" />
+                  <el-input-number
+                    v-model="adminSetting.blog.max_page_size.value"
+                    :min="1"
+                  />
                 </el-form-item>
               </el-form>
             </template>
@@ -207,14 +332,20 @@ const commit = async () => {
             <template #default>
               <el-form
                 ref="ruleFormRef"
-                :model="metaForm"
+                :model="adminSetting"
                 label-position="left"
               >
                 <el-form-item label="每页展示:" prop="name">
-                  <el-input-number v-model="num" :min="1" :max="10" />
+                  <el-input-number
+                    v-model="adminSetting.friend_link.page_size.value"
+                    :min="1"
+                  />
                 </el-form-item>
                 <el-form-item label="最大分页:" prop="name">
-                  <el-input-number v-model="num" :min="1" :max="10" />
+                  <el-input-number
+                    v-model="adminSetting.friend_link.max_page_size.value"
+                    :min="1"
+                  />
                 </el-form-item>
               </el-form>
             </template>
@@ -226,14 +357,20 @@ const commit = async () => {
             <template #default>
               <el-form
                 ref="ruleFormRef"
-                :model="metaForm"
+                :model="adminSetting"
                 label-position="left"
               >
                 <el-form-item label="每页展示:" prop="name">
-                  <el-input-number v-model="num" :min="1" :max="10" />
+                  <el-input-number
+                    v-model="adminSetting.photo_wall.page_size.value"
+                    :min="1"
+                  />
                 </el-form-item>
                 <el-form-item label="最大分页:" prop="name">
-                  <el-input-number v-model="num" :min="1" :max="10" />
+                  <el-input-number
+                    v-model="adminSetting.photo_wall.max_page_size.value"
+                    :min="1"
+                  />
                 </el-form-item>
               </el-form>
             </template>
@@ -243,7 +380,7 @@ const commit = async () => {
 
       <template #footer>
         <div class="w-full flex flex-row justify-start">
-          <el-button type="primary" @click="commit">更新配置</el-button>
+          <el-button type="primary" @click="updateSetting">更新配置</el-button>
         </div>
       </template>
     </el-card>

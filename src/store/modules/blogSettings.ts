@@ -1,7 +1,13 @@
-import { FrontSetting, FrontSettingsAPI } from "@/api/settings";
+import {
+  AdminSetting,
+  AdminSettingsAPI,
+  FrontSetting,
+  FrontSettingsAPI,
+} from "@/api/settings";
 import { store, useUserStore } from "@/store";
-import { FRONT_SETTING_KEY } from "@/enums/CacheEnum";
+import { ADMIN_SETTING_KEY, FRONT_SETTING_KEY } from "@/enums/CacheEnum";
 
+// TODO 相同的逻辑是否可以封装
 export const useFrontSettings = defineStore("frontSetting", () => {
   const frontSetting = reactive<FrontSetting>(<FrontSetting>{
     website_title: {
@@ -77,6 +83,110 @@ export const useFrontSettings = defineStore("frontSetting", () => {
   }
 
   return {
+    get,
+    refresh,
+  };
+});
+
+export const useAdminSettings = defineStore("adminSetting", () => {
+  const adminSetting = reactive<AdminSetting>(<AdminSetting>{
+    website_title: {
+      id: 0,
+      value: "",
+    },
+    website_logo: {
+      id: 0,
+      value: "",
+    },
+    record_info: {
+      id: 0,
+      value: "",
+    },
+    copyright: {
+      id: 0,
+      value: "",
+    },
+    category: {
+      page_size: {
+        id: 0,
+        value: "",
+      },
+      max_page_size: {
+        id: 0,
+        value: "",
+      },
+    },
+    tags: {
+      page_size: {
+        id: 0,
+        value: "",
+      },
+      max_page_size: {
+        id: 0,
+        value: "",
+      },
+    },
+    blog: {
+      page_size: {
+        id: 0,
+        value: "",
+      },
+      max_page_size: {
+        id: 0,
+        value: "",
+      },
+    },
+    friend_link: {
+      page_size: {
+        id: 0,
+        value: "",
+      },
+      max_page_size: {
+        id: 0,
+        value: "",
+      },
+    },
+    photo_wall: {
+      page_size: {
+        id: 0,
+        value: "",
+      },
+      max_page_size: {
+        id: 0,
+        value: "",
+      },
+    },
+  });
+
+  function get() {
+    return new Promise<AdminSetting>((resolve, reject) => {
+      if (localStorage.getItem(ADMIN_SETTING_KEY)) {
+        const adminSettingsObj = JSON.parse(
+          localStorage.getItem(ADMIN_SETTING_KEY) as string
+        ) as AdminSetting;
+        Object.assign(adminSetting, { ...adminSettingsObj });
+        resolve(adminSettingsObj);
+      } else {
+        AdminSettingsAPI.getAllSettings()
+          .then((data) => {
+            Object.assign(adminSetting, { ...data });
+            const adminSettingJSON = JSON.stringify(data);
+            localStorage.setItem(ADMIN_SETTING_KEY, adminSettingJSON);
+            resolve(data);
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      }
+    });
+  }
+  async function refresh() {
+    localStorage.removeItem(ADMIN_SETTING_KEY);
+    await get();
+  }
+
+  return {
+    adminSetting,
     get,
     refresh,
   };

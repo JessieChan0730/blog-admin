@@ -31,7 +31,7 @@ export interface MetaForm {
 
 const SETTING_PUT_BASE_URL = "/api/settings/";
 const FRONT_SETTING_BASE_URL = "/api/settings/front/";
-const ADMIN_SETTING__BASE_URL = "/api/settings/admin/";
+const ADMIN_SETTING_BASE_URL = "/api/settings/admin/";
 
 export interface Setting {
   id: number;
@@ -64,6 +64,7 @@ export interface FrontSetting {
   tags: FrontTagsSettings;
   blog: FrontBlogSettings;
 }
+// TODO 相同的逻辑是否可以封装
 export class FrontSettingsAPI {
   static getAllSettings() {
     return request<any, FrontSetting>({
@@ -73,6 +74,35 @@ export class FrontSettingsAPI {
   }
 
   static putFrontSetting(data: Setting[]) {
+    return request<any, null>({
+      url: `${SETTING_PUT_BASE_URL}`,
+      method: "put",
+      data,
+    });
+  }
+}
+
+export interface AdminSetting {
+  website_title: Setting;
+  website_logo: Setting;
+  record_info: Setting;
+  copyright: Setting;
+  category: PaginationSetting;
+  tags: PaginationSetting;
+  blog: PaginationSetting;
+  friend_link: PaginationSetting;
+  photo_wall: PaginationSetting;
+}
+
+export class AdminSettingsAPI {
+  static getAllSettings() {
+    return request<any, AdminSetting>({
+      url: `${ADMIN_SETTING_BASE_URL}`,
+      method: "get",
+    });
+  }
+
+  static putAdminSetting(data: Setting[]) {
     return request<any, null>({
       url: `${SETTING_PUT_BASE_URL}`,
       method: "put",
