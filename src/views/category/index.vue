@@ -117,7 +117,7 @@ const closeDialog = () => {
 const commit = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   let result: CategoryVo;
-  await formEl.validate(async (valid, fields) => {
+  await formEl.validate(async (valid) => {
     if (valid) {
       // TODO 验证通过
       if (dialogInfo.type == DType.Add) {

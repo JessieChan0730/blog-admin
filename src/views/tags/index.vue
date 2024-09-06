@@ -109,7 +109,7 @@ const closeDialog = () => {
 const commit = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   let result: TagsVO;
-  await formEl.validate(async (valid, fields) => {
+  await formEl.validate(async (valid) => {
     if (valid) {
       if (dialogInfo.type == DType.Add) {
         result = await TagsAPI.addTags(tagForm);

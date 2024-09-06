@@ -7,7 +7,7 @@
 
       <router-link v-else class="wh-full flex-center" to="/">
         <img v-if="settingsStore.sidebarLogo" :src="logo" class="logo-image" />
-        <span class="logo-title">{{ defaultSettings.title }}</span>
+        <span class="logo-title">{{ title }}</span>
       </router-link>
     </transition>
   </div>
@@ -15,9 +15,10 @@
 
 <script lang="ts" setup>
 import defaultSettings from "@/settings";
-import { useSettingsStore } from "@/store";
+import { useSettingsStore, useAdminSettings } from "@/store";
 
 const settingsStore = useSettingsStore();
+const adminSettingStore = useAdminSettings();
 
 defineProps({
   collapse: {
@@ -27,6 +28,15 @@ defineProps({
 });
 
 const logo = ref(new URL(`../../../../assets/logo.png`, import.meta.url).href);
+const title = ref(defaultSettings.title);
+
+onMounted(async () => {
+  const adminSetting = await adminSettingStore.get();
+  if (adminSetting) {
+    logo.value = adminSetting.website_logo.value;
+    title.value = adminSetting.website_title.value;
+  }
+});
 </script>
 
 <style lang="scss" scoped>

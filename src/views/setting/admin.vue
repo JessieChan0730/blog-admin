@@ -137,11 +137,7 @@ const submitUpload = () => {
   upload.value!.submit();
 };
 
-const uploadSuccess = (
-  response: any,
-  uploadFile: UploadFile,
-  uploadFiles: UploadFiles
-) => {
+const uploadSuccess = (response: any) => {
   if (response) {
     upload.value!.clearFiles();
     adminSetting.website_logo.value = response.data.logo;
@@ -159,7 +155,7 @@ const updateSetting = async () => {
   );
   if (response) {
     await adminSettingStore.refresh();
-    ElMessage.success("修改成功");
+    ElMessage.success("更新成功，刷新生效");
   }
 };
 </script>
@@ -209,12 +205,14 @@ const updateSetting = async () => {
               label-position="top"
               prop="cover"
             >
-              <div class="cover-container">
+              <div class="logo-container">
                 <el-image
                   :src="adminSetting.website_logo.value"
                   fit="contain"
                 />
               </div>
+            </el-form-item>
+            <el-form-item>
               <el-upload
                 :headers="uploadHeaders"
                 ref="upload"
@@ -392,8 +390,8 @@ const updateSetting = async () => {
   font-size: 0.9rem;
 }
 
-.cover-container {
-  width: 100%;
+.logo-container {
+  width: 6rem;
 
   el-image {
     display: block;

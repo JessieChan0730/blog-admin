@@ -114,11 +114,7 @@ const submitUpload = () => {
   upload.value!.submit();
 };
 
-const uploadSuccess = (
-  response: any,
-  uploadFile: UploadFile,
-  uploadFiles: UploadFiles
-) => {
+const uploadSuccess = (response: any) => {
   if (response) {
     upload.value!.clearFiles();
     frontSetting.website_cover.value = response.data.cover;
