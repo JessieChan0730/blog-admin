@@ -111,7 +111,6 @@ const verify = () => {
 const save = async () => {
   const has_error = verify();
   if (!has_error) {
-    // TODO 验证通过
     const response = await ArticleAPI.modifyArticle(route.params.id as string, {
       title: blog.title,
       content: blog.content,
@@ -130,7 +129,6 @@ const save = async () => {
       editMode.value = false;
     }
   } else {
-    // TODO 验证不通过
     ElNotification({
       title: "更新失败",
       message: `请按照表单规则提交`,
@@ -178,7 +176,6 @@ const cancel = () => {
         </div>
         <div class="author-info">
           <ul>
-            <!--TODO 请求用户信息-->
             <li>1 作者：{{ blog.author.username }}</li>
             <li>2 发表时间：{{ blog.create_date }}</li>
             <li>3 最后修改：{{ blog.update_date }}</li>

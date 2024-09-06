@@ -8,6 +8,9 @@ import { TagsAPI, TagsVO } from "@/api/tags";
 import { ArticleAPI, BlogForm } from "@/api/blog";
 import Editor from "@/components/WangEditor/index.vue";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
+import { useFrontSettings } from "@/store";
+
+const frontSettingStore = useFrontSettings();
 
 const upload = ref<UploadInstance>();
 const maxStepSize = 3;
@@ -18,6 +21,10 @@ const coverUploadUrl = ref("http://127.0.0.1:8000/api/cover/");
 const activeStep = ref(1);
 // 选择的tag列表
 const pickTags = ref<TagsVO[]>([]);
+// 最大选择
+const maxPickNumber = ref(4);
+// 已经选择
+const pickNumber = ref(1);
 // 查询的出来的tags列表
 const searchTags = ref<TagsVO[]>([]);
 // 分类
@@ -80,6 +87,8 @@ const uploadHeaders = reactive<Record<string, any>>({
 });
 
 onMounted(async () => {
+  const frontSetting = await frontSettingStore.get();
+  maxPickNumber.value = Number(frontSetting.tags.quote_max_num.value);
   const response = await CategoryAPI.getAllCategory();
   categories.value.push(...response);
 });
@@ -177,6 +186,7 @@ const handleClose = (tag: TagsVO) => {
   pickTags.value = pickTags.value.filter((dynamicTag) => {
     return dynamicTag.id !== tag.id;
   });
+  pickNumber.value--;
 };
 
 const selectTags = (id: number[]) => {
@@ -189,8 +199,18 @@ const selectTags = (id: number[]) => {
     tagsSelectVisible.value = false;
     return;
   }
+  if (pickNumber.value > maxPickNumber.value) {
+    ElNotification({
+      title: "提示",
+      message: "最多可选择四个标签",
+      type: "error",
+    });
+    tagsSelectVisible.value = false;
+    return;
+  }
   const tag = searchTags.value.filter((tag) => id[0] === tag.id).pop();
   pickTags.value.push(tag as TagsVO);
+  pickNumber.value++;
   tagsSelectVisible.value = false;
 };
 
@@ -199,11 +219,7 @@ const updateContent = (content: string) => {
 };
 
 // 封面上传成功回调
-const uploadSuccess = (
-  response: any,
-  uploadFile: UploadFile,
-  uploadFiles: UploadFiles
-) => {
+const uploadSuccess = (response: any) => {
   const { code, data } = response;
   if (code === 201) {
     const { cover } = data;
@@ -221,14 +237,17 @@ const publish = async () => {
   try {
     const is_verify = verify();
     if (!is_verify) {
-      await ArticleAPI.publishArticle(blogForm);
-      ElNotification({
-        title: "发布成功",
-        message: "发布博客成功",
-        type: "success",
-      });
-      // 重新设置表单
-      resetForm();
+      const response = await ArticleAPI.publishArticle(blogForm);
+      if (response) {
+        ElNotification({
+          title: "发布成功",
+          message: "发布博客成功",
+          type: "success",
+        });
+        pickNumber.value = 0;
+        // 重新设置表单
+        resetForm();
+      }
     } else {
       ElNotification({
         title: "发布失败",

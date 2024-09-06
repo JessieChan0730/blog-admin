@@ -199,9 +199,9 @@ const save = async () => {
       setting.tags = response.tags;
       setting.visible = response.visible;
       setting.recommend = response.recommend;
+      upload.value?.clearFiles();
+      ElMessage.success("更新配置成功");
     }
-    upload.value?.clearFiles();
-    ElMessage.success("更新配置成功");
   } else {
     ElNotification({
       title: "配置失败",

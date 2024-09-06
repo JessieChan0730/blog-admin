@@ -245,6 +245,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: {
           title: "Redoc",
           keepAlive: true,
+          icon: "api",
         },
       },
       {
@@ -254,6 +255,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: {
           title: "Swagger",
           keepAlive: true,
+          icon: "api",
         },
       },
     ],

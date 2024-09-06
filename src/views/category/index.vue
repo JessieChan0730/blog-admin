@@ -119,16 +119,13 @@ const commit = async (formEl: FormInstance | undefined) => {
   let result: CategoryVo;
   await formEl.validate(async (valid) => {
     if (valid) {
-      // TODO 验证通过
       if (dialogInfo.type == DType.Add) {
-        // TODO 新增
         result = await CategoryAPI.addCategory(categoryForm);
         if (categoryListPagination.results.length < pageSize.value) {
           categoryListPagination.results.push(result);
         }
         categoryListPagination.count++;
       } else if (dialogInfo.type == DType.Edit) {
-        // TODO 编辑
         result = await CategoryAPI.updateCategory(categoryForm);
         categoryListPagination.results = categoryListPagination.results?.map(
           (category) => {
