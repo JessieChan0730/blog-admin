@@ -2,11 +2,21 @@
   <div class="logo-container">
     <transition enter-active-class="animate__animated animate__fadeInLeft">
       <router-link v-if="collapse" class="wh-full flex-center" to="/">
-        <img v-if="settingsStore.sidebarLogo" :src="logo" class="logo-image" />
+        <img
+          v-if="settingsStore.sidebarLogo"
+          :src="logo"
+          class="logo-image"
+          alt="logo"
+        />
       </router-link>
 
       <router-link v-else class="wh-full flex-center" to="/">
-        <img v-if="settingsStore.sidebarLogo" :src="logo" class="logo-image" />
+        <img
+          v-if="settingsStore.sidebarLogo"
+          :src="logo"
+          class="logo-image"
+          alt="logo"
+        />
         <span class="logo-title">{{ title }}</span>
       </router-link>
     </transition>

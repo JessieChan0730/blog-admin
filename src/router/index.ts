@@ -69,8 +69,8 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "front",
         component: () => import("@/views/setting/front.vue"),
         meta: {
-          title: "前台设置",
-          icon: "el-icon-Setting",
+          title: "客户端设置",
+          icon: "el-icon-Cellphone",
           keepAlive: true,
         },
       },
@@ -80,7 +80,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         component: () => import("@/views/setting/admin.vue"),
         meta: {
           title: "后台设置",
-          icon: "el-icon-Setting",
+          icon: "el-icon-Monitor",
           keepAlive: true,
         },
       },
@@ -102,6 +102,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: {
           title: "我的博客",
           keepAlive: true,
+          icon: "blog",
         },
       },
       {
@@ -148,6 +149,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: {
           title: "发表博客",
           keepAlive: true,
+          icon: "edit",
         },
       },
     ],
@@ -202,6 +204,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: {
           title: "友情链接",
           keepAlive: true,
+          icon: "link",
         },
       },
       {
@@ -211,6 +214,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: {
           title: "照片墙",
           keepAlive: true,
+          icon: "el-icon-Picture",
         },
       },
       {
@@ -220,6 +224,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: {
           title: "关于本站",
           keepAlive: true,
+          icon: "el-icon-Warning",
         },
       },
     ],

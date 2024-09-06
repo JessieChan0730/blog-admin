@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import {
-  genFileId,
-  UploadFile,
-  UploadFiles,
-  UploadInstance,
-  UploadRawFile,
-} from "element-plus";
+import { genFileId, UploadInstance, UploadRawFile } from "element-plus";
 import type { UploadProps } from "element-plus";
 import { Picture, Upload } from "@element-plus/icons-vue";
 import { AdminSetting, AdminSettingsAPI, Setting } from "@/api/settings";
