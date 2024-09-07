@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { genFileId, UploadInstance, UploadRawFile } from "element-plus";
+import {
+  FormInstance,
+  FormRules,
+  genFileId,
+  UploadInstance,
+  UploadRawFile,
+} from "element-plus";
 import type { UploadProps } from "element-plus";
 import { Picture, Upload } from "@element-plus/icons-vue";
 import { AdminSetting, AdminSettingsAPI, Setting } from "@/api/settings";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 import { useAdminSettings } from "@/store";
+import { showValidateErrorMessage } from "@/utils/form";
 
 const adminSettingStore = useAdminSettings();
-const adminSettingForms = ref<Setting[]>([]);
+
 const adminSetting = reactive<AdminSetting>(<AdminSetting>{
   website_title: {
     id: 0,
@@ -76,10 +83,28 @@ const adminSetting = reactive<AdminSetting>(<AdminSetting>{
     },
   },
 });
+
+const rules = reactive<FormRules<AdminSetting>>({
+  "website_title.value": [
+    { required: true, message: "请输入网站备案信息", trigger: "blur" },
+  ],
+  "record_info.value": [
+    { required: true, message: "请输入网站备案信息", trigger: "blur" },
+  ],
+  "copyright.value": [
+    { required: true, message: "请输入网站版权信息", trigger: "blur" },
+  ],
+  "website_logo.value": [
+    { required: true, message: "请上传网站LOGO", trigger: "blur" },
+  ],
+});
+
 const uploadHeaders = reactive<Record<string, any>>({
   Authorization: localStorage.getItem(TOKEN_KEY),
 });
 
+const ruleFormRef = ref<FormInstance>();
+const adminSettingForms = ref<Setting[]>([]);
 const uploadUrl = ref("http://127.0.0.1:8000/api/settings/admin/logo/");
 const upload = ref<UploadInstance>();
 
@@ -143,14 +168,21 @@ const uploadError = () => {
   ElMessage.error("上传失败");
 };
 
-const updateSetting = async () => {
-  const response = await AdminSettingsAPI.putAdminSetting(
-    adminSettingForms.value
-  );
-  if (response) {
-    await adminSettingStore.refresh();
-    ElMessage.success("更新成功，刷新生效");
-  }
+const updateSetting = async (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  await formEl.validate(async (valid, fields) => {
+    if (valid) {
+      const response = await AdminSettingsAPI.putAdminSetting(
+        adminSettingForms.value
+      );
+      if (response) {
+        await adminSettingStore.refresh();
+        ElMessage.success("更新成功，刷新生效");
+      }
+    } else {
+      showValidateErrorMessage(fields);
+    }
+  });
 };
 </script>
 
@@ -159,12 +191,12 @@ const updateSetting = async () => {
     <el-card shadow="never" class="table-container">
       <el-tabs type="border-card">
         <el-tab-pane label="基础设置">
-          <el-form ref="ruleFormRef" :model="adminSetting">
+          <el-form ref="ruleFormRef" :rules="rules" :model="adminSetting">
             <el-form-item
               label="网站标题:"
               label-width="70px"
               label-position="top"
-              prop="name"
+              prop="website_title.value"
             >
               <el-input
                 v-model="adminSetting.website_title.value"
@@ -175,7 +207,7 @@ const updateSetting = async () => {
               label="备案信息:"
               label-width="70px"
               label-position="top"
-              prop="name"
+              prop="record_info.value"
             >
               <el-input
                 v-model="adminSetting.record_info.value"
@@ -186,7 +218,7 @@ const updateSetting = async () => {
               label="版权信息:"
               label-width="70px"
               label-position="top"
-              prop="name"
+              prop="copyright.value"
             >
               <el-input
                 v-model="adminSetting.copyright.value"
@@ -197,7 +229,7 @@ const updateSetting = async () => {
               label="网站 Logo:"
               label-width="70px"
               label-position="top"
-              prop="cover"
+              prop="website_logo.value"
             >
               <div class="logo-container">
                 <el-image
@@ -247,11 +279,7 @@ const updateSetting = async () => {
               <span class="module-title">分类模块</span>
             </template>
             <template #default>
-              <el-form
-                ref="ruleFormRef"
-                :model="adminSetting"
-                label-position="left"
-              >
+              <el-form :model="adminSetting" label-position="left">
                 <el-form-item label="每页展示:" prop="name">
                   <el-input-number
                     v-model="adminSetting.category.page_size.value"
@@ -272,11 +300,7 @@ const updateSetting = async () => {
               <span class="module-title">标签模块</span>
             </template>
             <template #default>
-              <el-form
-                ref="ruleFormRef"
-                :model="adminSetting"
-                label-position="left"
-              >
+              <el-form :model="adminSetting" label-position="left">
                 <el-form-item label="每页展示:" prop="name">
                   <el-input-number
                     v-model="adminSetting.tags.page_size.value"
@@ -297,11 +321,7 @@ const updateSetting = async () => {
               <span class="module-title">博客模块</span>
             </template>
             <template #default>
-              <el-form
-                ref="ruleFormRef"
-                :model="adminSetting"
-                label-position="left"
-              >
+              <el-form :model="adminSetting" label-position="left">
                 <el-form-item label="每页展示:" prop="name">
                   <el-input-number
                     v-model="adminSetting.blog.page_size.value"
@@ -322,11 +342,7 @@ const updateSetting = async () => {
               <span class="module-title">友链模块</span>
             </template>
             <template #default>
-              <el-form
-                ref="ruleFormRef"
-                :model="adminSetting"
-                label-position="left"
-              >
+              <el-form :model="adminSetting" label-position="left">
                 <el-form-item label="每页展示:" prop="name">
                   <el-input-number
                     v-model="adminSetting.friend_link.page_size.value"
@@ -347,11 +363,7 @@ const updateSetting = async () => {
               <span class="module-title">照片墙模块</span>
             </template>
             <template #default>
-              <el-form
-                ref="ruleFormRef"
-                :model="adminSetting"
-                label-position="left"
-              >
+              <el-form :model="adminSetting" label-position="left">
                 <el-form-item label="每页展示:" prop="name">
                   <el-input-number
                     v-model="adminSetting.photo_wall.page_size.value"
@@ -372,7 +384,9 @@ const updateSetting = async () => {
 
       <template #footer>
         <div class="w-full flex flex-row justify-start">
-          <el-button type="primary" @click="updateSetting">更新配置</el-button>
+          <el-button type="primary" @click="updateSetting(ruleFormRef)">
+            更新配置
+          </el-button>
         </div>
       </template>
     </el-card>

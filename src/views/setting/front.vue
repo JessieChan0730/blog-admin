@@ -1,12 +1,33 @@
 <script setup lang="ts">
-import { genFileId, UploadInstance, UploadRawFile } from "element-plus";
+import {
+  FormInstance,
+  FormRules,
+  genFileId,
+  UploadInstance,
+  UploadRawFile,
+} from "element-plus";
 import type { UploadProps } from "element-plus";
 import { Picture, Upload } from "@element-plus/icons-vue";
 import { FrontSetting, FrontSettingsAPI, Setting } from "@/api/settings";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 import { useFrontSettings } from "@/store";
+import { showValidateErrorMessage } from "@/utils/form";
 
 const frontSettingStore = useFrontSettings();
+const rules = reactive<FormRules<FrontSetting>>({
+  "website_title.value": [
+    { required: true, message: "请输入网站备案信息", trigger: "blur" },
+  ],
+  "record_info.value": [
+    { required: true, message: "请输入网站备案信息", trigger: "blur" },
+  ],
+  "copyright.value": [
+    { required: true, message: "请输入网站版权信息", trigger: "blur" },
+  ],
+  "website_cover.value": [
+    { required: true, message: "请上传网站封面", trigger: "blur" },
+  ],
+});
 const frontSetting = reactive<FrontSetting>(<FrontSetting>{
   website_title: {
     id: 0,
@@ -51,11 +72,11 @@ const frontSetting = reactive<FrontSetting>(<FrontSetting>{
     },
   },
 });
-
 const uploadHeaders = reactive<Record<string, any>>({
   Authorization: localStorage.getItem(TOKEN_KEY),
 });
 
+const ruleFormRef = ref<FormInstance>();
 const frontSettingForms = ref<Setting[]>([]);
 const uploadUrl = ref("http://127.0.0.1:8000/api/settings/front/cover/");
 const upload = ref<UploadInstance>();
@@ -120,14 +141,21 @@ const uploadError = () => {
   ElMessage.error("上传失败");
 };
 
-const updateSetting = async () => {
-  const response = await FrontSettingsAPI.putFrontSetting(
-    frontSettingForms.value
-  );
-  if (response) {
-    await frontSettingStore.refresh();
-    ElMessage.success("修改成功");
-  }
+const updateSetting = async (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  await formEl.validate(async (valid, fields) => {
+    if (valid) {
+      const response = await FrontSettingsAPI.putFrontSetting(
+        frontSettingForms.value
+      );
+      if (response) {
+        await frontSettingStore.refresh();
+        ElMessage.success("修改成功");
+      }
+    } else {
+      showValidateErrorMessage(fields);
+    }
+  });
 };
 </script>
 
@@ -136,12 +164,12 @@ const updateSetting = async () => {
     <el-card shadow="never" class="table-container">
       <el-tabs type="border-card">
         <el-tab-pane label="基础设置">
-          <el-form ref="ruleFormRef" :model="frontSetting">
+          <el-form ref="ruleFormRef" :rules="rules" :model="frontSetting">
             <el-form-item
               label="网站标题:"
               label-width="70px"
               label-position="top"
-              prop="name"
+              prop="website_title.value"
             >
               <el-input
                 v-model="frontSetting.website_title.value"
@@ -152,7 +180,7 @@ const updateSetting = async () => {
               label="备案信息:"
               label-width="70px"
               label-position="top"
-              prop="name"
+              prop="record_info.value"
             >
               <el-input
                 v-model="frontSetting.record_info.value"
@@ -163,7 +191,7 @@ const updateSetting = async () => {
               label="版权信息:"
               label-width="70px"
               label-position="top"
-              prop="name"
+              prop="copyright.value"
             >
               <el-input
                 v-model="frontSetting.copyright.value"
@@ -174,7 +202,7 @@ const updateSetting = async () => {
               label="网站封面:"
               label-width="70px"
               label-position="top"
-              prop="cover"
+              prop="website_cover.value"
             >
               <div class="cover-container">
                 <el-image
@@ -222,12 +250,8 @@ const updateSetting = async () => {
               <span class="module-title">分类模块</span>
             </template>
             <template #default>
-              <el-form
-                ref="ruleFormRef"
-                :model="frontSetting"
-                label-position="left"
-              >
-                <el-form-item label="主页最多显示:" prop="name">
+              <el-form :model="frontSetting" label-position="left">
+                <el-form-item label="主页最多显示:">
                   <el-input-number
                     v-model="frontSetting.category.visible_max_num.value"
                     :min="1"
@@ -241,12 +265,8 @@ const updateSetting = async () => {
               <span class="module-title">标签模块</span>
             </template>
             <template #default>
-              <el-form
-                ref="ruleFormRef"
-                :model="frontSetting"
-                label-position="left"
-              >
-                <el-form-item label="博客最多引用:" prop="name">
+              <el-form :model="frontSetting" label-position="left">
+                <el-form-item label="博客最多引用:">
                   <el-input-number
                     v-model="frontSetting.tags.quote_max_num.value"
                     :min="1"
@@ -260,24 +280,20 @@ const updateSetting = async () => {
               <span class="module-title">博客模块</span>
             </template>
             <template #default>
-              <el-form
-                ref="ruleFormRef"
-                :model="frontSetting"
-                label-position="left"
-              >
-                <el-form-item label="博客每页展示:" prop="name">
+              <el-form :model="frontSetting" label-position="left">
+                <el-form-item label="博客每页展示:">
                   <el-input-number
                     v-model="frontSetting.blog.page_size.value"
                     :min="1"
                   />
                 </el-form-item>
-                <el-form-item label="博客最大分页:" prop="name">
+                <el-form-item label="博客最大分页:">
                   <el-input-number
                     v-model="frontSetting.blog.max_page_size.value"
                     :min="1"
                   />
                 </el-form-item>
-                <el-form-item label="博客最多推荐:" prop="name">
+                <el-form-item label="博客最多推荐:">
                   <el-input-number
                     v-model="frontSetting.blog.recommend_max_num.value"
                     :min="1"
@@ -291,7 +307,9 @@ const updateSetting = async () => {
 
       <template #footer>
         <div class="w-full flex flex-row justify-start">
-          <el-button type="primary" @click="updateSetting">更新配置</el-button>
+          <el-button type="primary" @click="updateSetting(ruleFormRef)">
+            更新配置
+          </el-button>
         </div>
       </template>
     </el-card>

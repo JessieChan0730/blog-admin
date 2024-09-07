@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import SocialList from "@/views/blog/components/SocialMediaLink.vue";
 import ModuleTitle from "@/views/blog/components/ModuleTitle.vue";
-import { UserAPI, UserInfoVo } from "@/api/user";
+import { Hobby, UserAPI, UserInfoVo } from "@/api/user";
 import {
+  FormInstance,
+  FormRules,
   genFileId,
   UploadInstance,
   UploadProps,
@@ -15,6 +17,7 @@ import { useBlogStore } from "@/store";
 import { QueryParams } from "@/api/blog";
 import { CategoryAPI, CategoryVo } from "@/api/category";
 import { PaginationType, useGetPageSize } from "@/hooks/settings";
+import { showValidateErrorMessage } from "@/utils/form";
 
 const blogStore = useBlogStore();
 
@@ -33,8 +36,26 @@ const orderOptions = [
   },
 ];
 
-const categoryOptions = ref<CategoryVo[]>([]);
+const userInfoRules = reactive<FormRules<UserInfoVo>>({
+  nickname: [{ required: true, message: "必须填写用户名", trigger: "blur" }],
+  signature: [{ required: true, message: "必须填写签名", trigger: "blur" }],
+});
 
+const hobbyRules = reactive<FormRules<Hobby>>({
+  name: [{ required: true, message: "必须填写爱好名", trigger: "blur" }],
+  detail: [{ required: true, message: "必须填写爱好详情", trigger: "blur" }],
+});
+
+const rules = computed(() => {
+  let all_rules = userInfo.more_info.hobby.reduce((rules, _, index) => {
+    rules[`more_info.hobby.${index}.name`] = hobbyRules.name;
+    rules[`more_info.hobby.${index}.detail`] = hobbyRules.detail;
+    return rules;
+  }, {});
+  all_rules["nickname"] = userInfoRules.nickname;
+  all_rules["signature"] = userInfoRules.signature;
+  return all_rules;
+});
 // keyword
 const queryForm = reactive<QueryParams>({
   search: "",
@@ -45,7 +66,6 @@ const queryForm = reactive<QueryParams>({
 const userInfo = reactive<UserInfoVo>({
   nickname: "",
   avatar: "",
-  about_me: "",
   signature: "",
   more_info: {
     hobby: [
@@ -73,6 +93,8 @@ const orderBy = toRef(queryForm, "ordering");
 const page = toRef(queryForm, "page");
 const category = toRef(queryForm, "category");
 
+const ruleFormRef = ref<FormInstance>();
+const categoryOptions = ref<CategoryVo[]>([]);
 // 页面大小
 const pageSize = ref(0);
 const disabled = ref(false);
@@ -108,7 +130,6 @@ const getUserInfo = async () => {
   if (response) {
     userInfo.nickname = response.nickname;
     userInfo.avatar = response.avatar;
-    userInfo.about_me = response.about_me;
     userInfo.signature = response.signature;
     userInfo.more_info = response.more_info;
   }
@@ -151,20 +172,27 @@ const intoEdit = () => {
   isShowInfo.value = false;
 };
 // 提交表单信息
-const commitInfo = async () => {
-  const response = await UserAPI.updateUserInfo({
-    nickname: userInfo.nickname,
-    signature: userInfo.signature,
-    more_info: userInfo.more_info,
+const commitInfo = async (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  await formEl.validate(async (valid, fields) => {
+    if (valid) {
+      const response = await UserAPI.updateUserInfo({
+        nickname: userInfo.nickname,
+        signature: userInfo.signature,
+        more_info: userInfo.more_info,
+      });
+      if (response) {
+        userInfo.nickname = response.nickname;
+        userInfo.signature = response.signature;
+        userInfo.more_info.hobby = response.more_info.hobby;
+        userInfo.more_info.media = response.more_info.media;
+        ElMessage.success("保存成功");
+        isShowInfo.value = true;
+      }
+    } else {
+      showValidateErrorMessage(fields);
+    }
   });
-  if (response) {
-    userInfo.nickname = response.nickname;
-    userInfo.signature = response.signature;
-    userInfo.more_info.hobby = response.more_info.hobby;
-    userInfo.more_info.media = response.more_info.media;
-    ElMessage.success("添加成功");
-    isShowInfo.value = true;
-  }
 };
 // 添加爱好
 const addHobby = () => {
@@ -227,76 +255,93 @@ const reset = () => {
             </div>
           </template>
           <template #default>
-            <!--信息面板-->
-            <div v-if="isShowInfo" class="info-panel">
-              <div class="info-container">
-                <span id="username" class="text-size-xl mb-2">
-                  {{ userInfo.nickname }}
-                </span>
-                <span id="signature" class="text-size-xs mb-2 color-gray-500">
-                  {{ userInfo.signature }}
-                </span>
+            <transition
+              mode="out-in"
+              enter-active-class="animate__animated animate__zoomIn"
+              leave-active-class="animate__animated animate__zoomOut"
+            >
+              <div v-if="isShowInfo" class="info-panel">
+                <div class="info-container">
+                  <span id="username" class="text-size-xl mb-2">
+                    {{ userInfo.nickname }}
+                  </span>
+                  <span id="signature" class="text-size-xs mb-2 color-gray-500">
+                    {{ userInfo.signature }}
+                  </span>
+                </div>
+                <div class="other-info">
+                  <ModuleTitle title="我的爱好">
+                    <template #icon>
+                      <MagicStick />
+                    </template>
+                  </ModuleTitle>
+                  <el-collapse class="my-2 color-gray" v-model="activeNames">
+                    <el-collapse-item
+                      v-for="(hobby, index) in userInfo.more_info.hobby"
+                      :title="hobby.name"
+                      :name="index"
+                      :key="index"
+                    >
+                      <div class="color-gray">
+                        {{ hobby.detail }}
+                      </div>
+                    </el-collapse-item>
+                  </el-collapse>
+                  <ModuleTitle title="社交媒体">
+                    <template #icon>
+                      <Link />
+                    </template>
+                  </ModuleTitle>
+                  <SocialList :mediaLink="userInfo.more_info.media" />
+                </div>
               </div>
-              <div class="other-info">
-                <ModuleTitle title="我的爱好">
-                  <template #icon>
-                    <MagicStick />
-                  </template>
-                </ModuleTitle>
-                <el-collapse class="my-2 color-gray" v-model="activeNames">
-                  <el-collapse-item
-                    v-for="(hobby, index) in userInfo.more_info.hobby"
-                    :title="hobby.name"
-                    :name="index"
-                    :key="index"
-                  >
-                    <div class="color-gray">
-                      {{ hobby.detail }}
-                    </div>
-                  </el-collapse-item>
-                </el-collapse>
-                <ModuleTitle title="社交媒体">
-                  <template #icon>
-                    <Link />
-                  </template>
-                </ModuleTitle>
-                <SocialList :mediaLink="userInfo.more_info.media" />
-              </div>
-            </div>
-            <!--编辑信息面板-->
-            <div v-else class="edit-panel">
-              <el-form
-                label-position="top"
-                label-width="auto"
-                :model="userInfo"
-                style="max-width: 600px"
-              >
-                <el-form-item label="昵称">
-                  <el-input
-                    placeholder="请输昵称"
-                    v-model="userInfo.nickname"
-                  />
-                </el-form-item>
-                <el-form-item label="个性签名">
-                  <el-input type="textarea" v-model="userInfo.signature" />
-                </el-form-item>
-                <el-form-item label="个人爱好">
+              <!--编辑信息面板-->
+              <div v-else class="edit-panel">
+                <el-form
+                  :rules="rules"
+                  ref="ruleFormRef"
+                  label-position="top"
+                  label-width="auto"
+                  :model="userInfo"
+                  style="max-width: 600px"
+                >
+                  <el-form-item label="昵称" v-model="userInfo" prop="nickname">
+                    <el-input
+                      placeholder="请输昵称"
+                      v-model="userInfo.nickname"
+                    />
+                  </el-form-item>
+                  <el-form-item label="个性签名" prop="signature">
+                    <el-input type="textarea" v-model="userInfo.signature" />
+                  </el-form-item>
+
                   <div
                     class="w-full"
                     v-for="(hobby, index) in userInfo.more_info.hobby"
                     :key="index"
                   >
-                    <el-input
-                      class="mb-1"
-                      placeholder="爱好名"
-                      size="small"
-                      v-model="hobby.name"
-                    />
-                    <el-input
-                      class="mb-1"
-                      type="textarea"
-                      v-model="hobby.detail"
-                    />
+                    <el-form-item
+                      :label="'爱好 ' + (index + 1)"
+                      :prop="`more_info.hobby.${index}.name`"
+                    >
+                      <el-input
+                        class="mb-1"
+                        placeholder="爱好名"
+                        size="small"
+                        v-model="hobby.name"
+                      />
+                    </el-form-item>
+                    <el-form-item
+                      :label="'详情 ' + (index + 1)"
+                      :prop="`more_info.hobby.${index}.detail`"
+                    >
+                      <el-input
+                        class="mb-1"
+                        type="textarea"
+                        placeholder="爱好详情"
+                        v-model="hobby.detail"
+                      />
+                    </el-form-item>
                   </div>
                   <div class="w-full flex flex-row justify-end">
                     <el-button
@@ -316,23 +361,27 @@ const reset = () => {
                       删除
                     </el-button>
                   </div>
-                </el-form-item>
-                <el-form-item label="社交媒体">
-                  <div
-                    class="link-input w-full flex flex-row justify-between items-center mb-2"
-                    v-for="(index, media) in userInfo.more_info.media"
-                    :key="media"
-                  >
-                    <SvgIcon size="1.2rem" class="mr-1.5" :icon-class="media" />
-                    <el-input
-                      size="small"
-                      placeholder="link...."
-                      v-model="userInfo.more_info.media[media]"
-                    />
-                  </div>
-                </el-form-item>
-              </el-form>
-            </div>
+                  <el-form-item label="社交媒体">
+                    <div
+                      class="link-input w-full flex flex-row justify-between items-center mb-2"
+                      v-for="(index, media) in userInfo.more_info.media"
+                      :key="media"
+                    >
+                      <SvgIcon
+                        size="1.2rem"
+                        class="mr-1.5"
+                        :icon-class="media"
+                      />
+                      <el-input
+                        size="small"
+                        placeholder="link...."
+                        v-model="userInfo.more_info.media[media]"
+                      />
+                    </div>
+                  </el-form-item>
+                </el-form>
+              </div>
+            </transition>
           </template>
           <template #footer>
             <div v-if="isShowInfo" class="show-info">
@@ -341,7 +390,9 @@ const reset = () => {
               </el-button>
             </div>
             <div v-else class="edit-info">
-              <el-button type="primary" @click="commitInfo">保存</el-button>
+              <el-button type="primary" @click="commitInfo(ruleFormRef)">
+                保存
+              </el-button>
               <el-button @click="exitEdit">取消</el-button>
             </div>
           </template>

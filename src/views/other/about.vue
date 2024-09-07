@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import Editor from "@/components/WangEditor/index.vue";
 import { SiteInfo, SiteInfoAPI, SiteInfoForm } from "@/api/siteinfo";
+import { FormInstance } from "element-plus";
+
+const ruleFormRef = ref<FormInstance>();
 
 const siteInfo = reactive<SiteInfo>({
   title: "",
@@ -59,7 +62,12 @@ const saveSiteInfo = async () => {
               <span>编辑</span>
             </span>
           </template>
-          <el-form label-position="top" size="large" :model="siteInfoForm">
+          <el-form
+            label-position="top"
+            size="large"
+            :model="siteInfoForm"
+            ref="ruleFormRef"
+          >
             <el-form-item label="标题">
               <el-input placeholder="请输入标题" v-model="siteInfoForm.title" />
             </el-form-item>

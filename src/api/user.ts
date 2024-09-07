@@ -14,6 +14,14 @@ export class UserAPI {
   }
 
   static updateUserInfo(data: UserInfoForm) {
+    for (const mediaKey in data.more_info?.media) {
+      if (
+        data.more_info?.media.hasOwnProperty(mediaKey) &&
+        (data.more_info?.media as any)[mediaKey] === ""
+      ) {
+        (data.more_info?.media as any)[mediaKey] = "暂无";
+      }
+    }
     return request<any, UserInfoVo>({
       url: `${USER_INFO_URL}/change/`,
       method: "put",
@@ -54,7 +62,6 @@ export interface UserInfoVo {
   // /** 头像URL */
   avatar: string;
   signature: string;
-  about_me: string;
   more_info: MoreInfo;
 }
 
