@@ -25,16 +25,16 @@
     <el-dropdown class="setting-item" trigger="click">
       <div class="flex-center h100% p10px">
         <img
-          :src="userStore.user.avatar + '?imageView2/1/w/80/h/80'"
+          :src="userStore.user.avatar"
           class="rounded-full mr-10px w24px w24px"
         />
-        <span>{{ userStore.user.username }}</span>
+        <span>{{ userStore.user.nickname }}</span>
       </div>
       <template #dropdown>
         <el-dropdown-menu>
           <a
             target="_blank"
-            href="https://gitee.com/youlaiorg/vue3-element-admin"
+            href="https://github.com/JessieChan0730/blog-admin"
           >
             <el-dropdown-item>{{ $t("navbar.gitee") }}</el-dropdown-item>
           </a>

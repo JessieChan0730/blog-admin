@@ -1,16 +1,28 @@
 import AuthAPI from "@/api/auth";
-import UserAPI from "@/api/user";
+import UserAPI, { MoreInfo, UserInfoVo } from "@/api/user";
 import { resetRouter } from "@/router";
 import { store } from "@/store";
 
 import type { LoginData } from "@/api/auth";
-import type { UserInfo } from "@/api/user";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 
 export const useUserStore = defineStore("user", () => {
-  const user = ref<UserInfo>({
-    roles: [],
-    perms: [],
+  const user = ref<UserInfoVo>({
+    nickname: "",
+    // /** 头像URL */
+    avatar: "",
+    signature: "",
+    more_info: {
+      hobby: [],
+      media: {
+        github: "",
+        tiktok: "",
+        csdn: "",
+        bilibili: "",
+      },
+    },
+    // roles: [],
+    // perms: [],
   });
 
   /**
@@ -35,17 +47,18 @@ export const useUserStore = defineStore("user", () => {
 
   // 获取信息(用户昵称、头像、角色集合、权限集合)
   function getUserInfo() {
-    return new Promise<UserInfo>((resolve, reject) => {
+    return new Promise<UserInfoVo>((resolve, reject) => {
       UserAPI.getInfo()
         .then((data) => {
           if (!data) {
             reject("Verification failed, please Login again.");
             return;
           }
-          if (!data.roles || data.roles.length <= 0) {
-            reject("getUserInfo: roles must be a non-null array!");
-            return;
-          }
+          // 获取用户权限，生成动态路由
+          // if (!data.roles || data.roles.length <= 0) {
+          //   reject("getUserInfo: roles must be a non-null array!");
+          //   return;
+          // }
           Object.assign(user.value, { ...data });
           resolve(data);
         })

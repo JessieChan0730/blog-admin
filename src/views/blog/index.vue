@@ -13,13 +13,14 @@ import {
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 import { Document, Hide, Search, View } from "@element-plus/icons-vue";
 import router from "@/router";
-import { useBlogStore } from "@/store";
+import { useBlogStore, useUserStore } from "@/store";
 import { QueryParams } from "@/api/blog";
 import { CategoryAPI, CategoryVo } from "@/api/category";
 import { PaginationType, useGetPageSize } from "@/hooks/settings";
 import { showValidateErrorMessage } from "@/utils/form";
 
 const blogStore = useBlogStore();
+const userStore = useUserStore();
 
 const orderOptions = [
   {
@@ -47,9 +48,10 @@ const hobbyRules = reactive<FormRules<Hobby>>({
 });
 
 const rules = computed(() => {
-  let all_rules = userInfo.more_info.hobby.reduce((rules, _, index) => {
-    rules[`more_info.hobby.${index}.name`] = hobbyRules.name;
-    rules[`more_info.hobby.${index}.detail`] = hobbyRules.detail;
+  let all_rules: Record<string, any> = {};
+  all_rules = userInfo.more_info.hobby.reduce((rules, _, index) => {
+    (rules as any)[`more_info.hobby.${index}.name`] = hobbyRules.name;
+    (rules as any)[`more_info.hobby.${index}.detail`] = hobbyRules.detail;
     return rules;
   }, {});
   all_rules["nickname"] = userInfoRules.nickname;
@@ -126,7 +128,7 @@ watch([keyword, orderBy, page, category], () => {
 });
 
 const getUserInfo = async () => {
-  const response = await UserAPI.getInfo();
+  const response = await userStore.getUserInfo();
   if (response) {
     userInfo.nickname = response.nickname;
     userInfo.avatar = response.avatar;

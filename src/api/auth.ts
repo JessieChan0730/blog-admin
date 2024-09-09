@@ -23,7 +23,7 @@ class AuthAPI {
   /** 注销 接口*/
   static logout() {
     return request({
-      url: "/api/v1/auth/logout",
+      url: "/api/logout",
       method: "delete",
     });
   }

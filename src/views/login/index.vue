@@ -14,7 +14,7 @@
     <!-- 登录表单 -->
     <el-card class="login-card">
       <div class="text-center relative">
-        <h2>{{ defaultSettings.title }}</h2>
+        <h2>{{ adminSetting.website_title.value }}</h2>
         <el-tag class="ml-2 absolute-rt">{{ defaultSettings.version }}</el-tag>
       </div>
 
@@ -106,10 +106,11 @@
     <!-- ICP备案 -->
     <div class="icp-info" v-show="icpVisible">
       <p>
-        Copyright © 2021 - 2024 youlai.tech All Rights Reserved. 有来技术
-        版权所有
+        <!-- Copyright © 2021 - 2024 youlai.tech All Rights Reserved. 有来技术  -->
+        <!-- 版权所有 -->
+        {{ adminSetting.copyright.value }}
       </p>
-      <p>皖ICP备20006496号-3</p>
+      <p>{{ adminSetting.record_info.value }}</p>
     </div>
   </div>
 </template>
@@ -118,8 +119,13 @@
 // 外部库和依赖
 import { LocationQuery, useRoute } from "vue-router";
 
+interface AdminSetting {
+  website_title: Setting;
+  record_info: Setting;
+  copyright: Setting;
+}
 // 内部依赖
-import { useSettingsStore, useUserStore } from "@/store";
+import { useAdminSettings, useSettingsStore, useUserStore } from "@/store";
 import AuthAPI, { type LoginData } from "@/api/auth";
 import router from "@/router";
 import defaultSettings from "@/settings";
@@ -130,10 +136,11 @@ import type { FormInstance } from "element-plus";
 
 // 导入 login.scss 文件
 import "@/styles/login.scss";
-
+import { Setting } from "@/api/settings";
 // 使用导入的依赖和库
 const userStore = useUserStore();
 const settingsStore = useSettingsStore();
+const adminSettingStore = useAdminSettings();
 const route = useRoute();
 // 窗口高度
 const { height } = useWindowSize();
@@ -156,6 +163,21 @@ const loginFormRef = ref<FormInstance>();
 const loginData = ref<LoginData>({
   username: "cheng",
   password: "123456",
+});
+
+const adminSetting = reactive<AdminSetting>({
+  website_title: {
+    id: 0,
+    value: defaultSettings.title,
+  },
+  record_info: {
+    id: 0,
+    value: "",
+  },
+  copyright: {
+    id: 0,
+    value: "",
+  },
 });
 
 const loginRules = computed(() => {
@@ -256,9 +278,14 @@ function checkCapslock(event: KeyboardEvent) {
 }
 
 // 取消验证码功能
-// onMounted(() => {
-//   getCaptcha();
-// });
+onMounted(async () => {
+  const response = await adminSettingStore.get();
+  if (response) {
+    adminSetting.website_title = response.website_title;
+    adminSetting.copyright = response.copyright;
+    adminSetting.record_info = response.record_info;
+  }
+});
 </script>
 
 <style lang="scss" scoped></style>

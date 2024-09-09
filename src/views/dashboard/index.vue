@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <!--    <github-corner class="github-corner" />-->
+    <github-corner class="github-corner" />
 
     <el-card shadow="never">
       <el-row justify="space-between">
@@ -8,12 +8,12 @@
           <div class="flex h-full items-center">
             <img
               class="w-20 h-20 mr-5 rounded-full"
-              :src="userStore.user.avatar + '?imageView2/1/w/80/h/80'"
+              :src="userStore.user.avatar"
             />
             <div>
               <p>{{ greetings }}</p>
               <p class="text-sm text-gray">
-                今日天气晴朗，气温在15℃至25℃之间，东南风。
+                你好啊，管理员！欢迎来到博客管理后台
               </p>
             </div>
           </div>
@@ -50,7 +50,7 @@
           <div class="e-title">最近发布文章</div>
           <el-table
             :data="articles"
-            style="padding-top: 25px; padding-bottom: 4px"
+            style="padding-top: 24px; padding-bottom: 4px"
             fit
           >
             <el-table-column label="标题">
@@ -85,7 +85,7 @@
             <div
               id="categoryChart"
               class="chart"
-              style=" width: 100%;height: 310px"
+              style="width: 100%; height: 310px"
             ></div>
           </div>
         </el-card>
@@ -136,19 +136,6 @@ const greetings = computed(() => {
 
 // 右上角数量
 const statisticData = ref([
-  // {
-  //   value: 99,
-  //   iconClass: "message",
-  //   title: "消息",
-  //   key: "message",
-  // },
-  // {
-  //   value: 50,
-  //   iconClass: "todo",
-  //   title: "待办",
-  //   suffix: "/100",
-  //   key: "upcoming",
-  // },
   {
     value: 100,
     iconClass: "project",
@@ -252,6 +239,7 @@ const initCategoryPie = (data: any) => {
 /** 加载访问统计数据 */
 onMounted(async () => {
   const response = await SumUpAPI.getAllSumUpInfo();
+  await useUserStore().getUserInfo();
   initContributeDate(response.articles_per_day);
   initCategoryPie(response.category_per_name);
   statisticData.value[0].value = response.article_num;
