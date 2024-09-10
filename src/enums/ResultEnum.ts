@@ -28,4 +28,9 @@ export const enum ResultEnum {
    * 请求错误
    */
   BAD_REQUEST = 400,
+
+  /**
+   * 请求不允许
+   */
+  ALLOW_REQUEST = 405,
 }

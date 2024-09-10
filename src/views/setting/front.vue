@@ -11,7 +11,7 @@ import { Picture, Upload } from "@element-plus/icons-vue";
 import { FrontSetting, FrontSettingsAPI, Setting } from "@/api/settings";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 import { useFrontSettings } from "@/store";
-import { showValidateErrorMessage } from "@/utils/form";
+import { showValidateErrorMessage } from "@/utils/error";
 
 const frontSettingStore = useFrontSettings();
 const rules = reactive<FormRules<FrontSetting>>({

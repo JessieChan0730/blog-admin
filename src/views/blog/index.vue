@@ -17,7 +17,7 @@ import { useBlogStore, useUserStore } from "@/store";
 import { QueryParams } from "@/api/blog";
 import { CategoryAPI, CategoryVo } from "@/api/category";
 import { PaginationType, useGetPageSize } from "@/hooks/settings";
-import { showValidateErrorMessage } from "@/utils/form";
+import { showValidateErrorMessage } from "@/utils/error";
 
 const blogStore = useBlogStore();
 const userStore = useUserStore();

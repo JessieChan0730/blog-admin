@@ -2,6 +2,7 @@ import axios, { InternalAxiosRequestConfig, AxiosResponse } from "axios";
 import { useUserStoreHook } from "@/store/modules/user";
 import { ResultEnum } from "@/enums/ResultEnum";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
+import { showBadRequestErrorMessage } from "@/utils/error";
 
 // 创建 axios 实例
 const service = axios.create({
@@ -9,8 +10,6 @@ const service = axios.create({
   timeout: 50000,
   headers: { "Content-Type": "application/json;charset=utf-8" },
 });
-
-const handlerExps = (exps: any) => {};
 
 // 请求拦截器
 service.interceptors.request.use(
@@ -48,30 +47,37 @@ service.interceptors.response.use(
       return;
     } else {
       ElMessage.error("系统出错");
-      return Promise.reject(new Error("Error"));
+      return Promise.reject(new Error("系统出错"));
     }
   },
   (error: any) => {
     // 异常处理
     // 登录信息过期
     if (error.response.data) {
-      const { code, msg } = error.response.data;
+      const { code, msg, exps } = error.response.data;
       if (code === ResultEnum.TOKEN_INVALID) {
-        ElNotification({
-          title: "提示",
-          message: "您的会话已过期，请重新登录",
-          type: "info",
-        });
         useUserStoreHook()
           .resetToken()
           .then(() => {
-            location.reload();
+            // location.reload();
+            ElNotification({
+              title: "提示",
+              message: exps.detail,
+              type: "info",
+            });
           });
       } else if (code === ResultEnum.BAD_REQUEST) {
         const { exps } = error.response.data;
-        ElMessage.error(msg);
-        // 结束，不向下传递异常
+        // ElMessage.error(msg);
+        showBadRequestErrorMessage(exps);
         // TODO 处理 exps
+        return;
+      } else if (code === ResultEnum.ERROR) {
+        ElMessage.error("服务器出错，请联系管理员");
+        return;
+      } else if (code === ResultEnum.ALLOW_REQUEST) {
+        ElMessage.success("请求方法不被允许");
+        // 结束
         return;
       } else {
         ElMessage.error(msg || "系统出错");

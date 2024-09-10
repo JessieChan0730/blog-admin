@@ -131,7 +131,6 @@ const commit = async () => {
   if (d_len == 0 || d_len > 255)
     return ElMessage.error("必须填写简介，且长度大于0，小于255");
   if (drawerInfo.type == DType.Add) {
-    // TODO 新增
     if (!photoForm.image) return ElMessage.error("图片不能为空");
     const result = await PhotoWallAPI.uploadPhoto(photoForm);
     if (result && photoWallPagination.results.length < pageSize.value) {
@@ -140,7 +139,6 @@ const commit = async () => {
     photoWallPagination.count++;
     ElMessage.success("上传成功");
   } else if (drawerInfo.type == DType.Edit) {
-    // TODO 编辑
     const result = await PhotoWallAPI.updatePhoto(photoForm.id as number, {
       description: photoForm.description,
     });

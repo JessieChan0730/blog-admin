@@ -11,7 +11,7 @@ import { Picture, Upload } from "@element-plus/icons-vue";
 import { AdminSetting, AdminSettingsAPI, Setting } from "@/api/settings";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 import { useAdminSettings } from "@/store";
-import { showValidateErrorMessage } from "@/utils/form";
+import { showValidateErrorMessage } from "@/utils/error";
 
 const adminSettingStore = useAdminSettings();
 
