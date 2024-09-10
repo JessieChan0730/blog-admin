@@ -158,7 +158,9 @@ const cancel = () => {
         <div
           class="blog-content editor-content-view"
           id="content"
+          v-if="true"
           v-dompurify-html="blog.content"
+          v-highlight
         ></div>
         <el-divider />
         <div class="blog-tags">

@@ -6,6 +6,7 @@ import type { App } from "vue";
 import { setupElIcons } from "./icons";
 import { setupPermission } from "./permission";
 import { setupVueDOMPurifyHTML } from "@/safe";
+import { setupLHighLight } from "@/plugins/highlight";
 export default {
   install(app: App<Element>) {
     // 自定义指令(directive)
@@ -22,5 +23,7 @@ export default {
     setupPermission();
     // 安全组件
     setupVueDOMPurifyHTML(app);
+    // 代码高亮
+    setupLHighLight(app);
   },
 };

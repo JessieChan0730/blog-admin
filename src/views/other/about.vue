@@ -83,7 +83,9 @@ const saveSiteInfo = async (formEl: FormInstance | undefined) => {
           <h1 class="title">{{ siteInfo.title }}</h1>
           <div
             class="editor-content-view"
+            v-if="siteInfo.content"
             v-dompurify-html="siteInfo.content"
+            v-highlight
           ></div>
         </el-tab-pane>
         <el-tab-pane>

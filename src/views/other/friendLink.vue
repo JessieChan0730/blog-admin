@@ -508,7 +508,13 @@ const saveStatement = async () => {
               <span>预览</span>
             </span>
           </template>
-          <div class="editor-content-view" v-dompurify-html="statement"></div>
+          <div
+            class="editor-content-view"
+            v-dompurify-html="statement"
+            v-if="statement.replace(/<\/?[^>]*>/g, '').trim() !== ''"
+            v-highlight
+          ></div>
+          <el-empty v-else description="暂无预览" />
         </el-tab-pane>
         <el-tab-pane>
           <template #label>

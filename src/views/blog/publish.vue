@@ -450,7 +450,9 @@ function formatDate(date = new Date()) {
                 <div
                   class="blog-content w-full editor-content-view"
                   id="content"
+                  v-if="true"
                   v-dompurify-html="blogForm.content"
+                  v-highlight
                 ></div>
                 <el-divider />
                 <div class="blog-tags">
