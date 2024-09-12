@@ -5,6 +5,7 @@ import { onMounted } from "vue";
 import type { FormRules, FormInstance } from "element-plus";
 import { Delete, InfoFilled, Plus } from "@element-plus/icons-vue";
 import { PaginationType, useGetPageSize } from "@/hooks/settings";
+import { textColor } from "@/utils/textcolor";
 
 enum DType {
   Add,
@@ -26,6 +27,7 @@ const dialogInfo = reactive<DialogInfo>({
 
 const tagForm = reactive<TagsForm>({
   name: "",
+  color: "",
 });
 
 let tagsListPagination = reactive<Pagination<TagsVO>>({
@@ -48,6 +50,18 @@ const tagsFormRuler = reactive<FormRules<TagsForm>>({
   ],
 });
 
+// 预定义颜色
+const predefineColors = ref([
+  "#ff4500",
+  "#ff8c00",
+  "#ffd700",
+  "#90ee90",
+  "#00ced1",
+  "#1e90ff",
+  "#c71585",
+  "#c7158577",
+]);
+
 const currentPage = ref(1);
 const disabled = ref(false);
 const background = ref(true);
@@ -60,6 +74,7 @@ onMounted(async () => {
   await loadTagsData(1);
   pageSize.value = await useGetPageSize(PaginationType.Tags);
 });
+
 /**
  * 计算属性
  * 通过checkbox选中的tags实例，计算出对应的ID数组
@@ -69,6 +84,7 @@ const ids = computed(() => {
     return tag.id;
   });
 });
+
 const loadTagsData = async (page: number) => {
   const response = await TagsAPI.getAllTags(page);
   if (response) {
@@ -92,6 +108,7 @@ const showDialog = (type: DType, row?: any) => {
     dialogInfo.title = "编辑标签";
     // 初始化dialog中编辑框的内容
     tagForm.name = row.name;
+    tagForm.color = row.color;
     tagForm.id = row.id;
   } else if (type == DType.Add) {
     dialogInfo.title = "新增标签";
@@ -123,6 +140,7 @@ const commit = async (formEl: FormInstance | undefined) => {
         tagsListPagination.results = tagsListPagination.results?.map((tag) => {
           if (tag.id == result.id) {
             tag.name = result.name;
+            tag.color = result.color;
           }
           return tag;
         });
@@ -147,7 +165,7 @@ const commit = async (formEl: FormInstance | undefined) => {
 const deleteTag = async (id: number | string) => {
   await TagsAPI.deleteTag(id);
   // 刷新当页数据
-  loadTagsData(currentPage.value);
+  await loadTagsData(currentPage.value);
 };
 // 删除多个tag
 const deleteTags = async () => {
@@ -197,6 +215,19 @@ const selectChange = (newSelection: TagsVO[]) => {
         <el-table-column type="selection" width="55" />
         <el-table-column property="id" label="标签ID" width="200" />
         <el-table-column property="name" label="标签名" width="full" />
+        <el-table-column property="color" label="标签颜色" width="300">
+          <template #default="scope">
+            <div
+              :style="{
+                backgroundColor: scope.row.color,
+                color: textColor(scope.row.color),
+                padding: '5px 10px',
+              }"
+            >
+              {{ scope.row.color }}
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="操作">
           <template #default="scope">
             <el-button
@@ -251,6 +282,17 @@ const selectChange = (newSelection: TagsVO[]) => {
           prop="name"
         >
           <el-input v-model="tagForm.name" auto-complete="off" />
+        </el-form-item>
+        <el-form-item
+          label="标签颜色:"
+          label-width="70px"
+          label-position="top"
+          prop="color"
+        >
+          <el-color-picker
+            v-model="tagForm.color"
+            :predefine="predefineColors"
+          />
         </el-form-item>
       </el-form>
       <template #footer>

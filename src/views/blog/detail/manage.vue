@@ -14,6 +14,7 @@ import { TagsAPI, TagsVO } from "@/api/tags";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 import { ref } from "vue";
 import router from "@/router";
+import { textColor } from "@/utils/textcolor";
 
 const route = useRoute();
 const blogStore = useBlogStore();
@@ -303,6 +304,8 @@ const cancel = () => {
               v-for="tag in setting.tags"
               :key="tag"
               closable
+              :color="tag.color"
+              :style="{ color: textColor(tag.color as string) }"
               :disable-transitions="false"
               @close="handleClose(tag)"
             >

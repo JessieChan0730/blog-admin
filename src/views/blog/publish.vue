@@ -9,6 +9,7 @@ import { ArticleAPI, BlogForm } from "@/api/blog";
 import Editor from "@/components/WangEditor/index.vue";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 import { useFrontSettings } from "@/store";
+import { textColor } from "@/utils/textcolor";
 
 const frontSettingStore = useFrontSettings();
 
@@ -351,6 +352,8 @@ function formatDate(date = new Date()) {
                     v-for="tag in pickTags"
                     :key="tag"
                     closable
+                    :color="tag.color"
+                    :style="{ color: textColor(tag.color as string) }"
                     :disable-transitions="false"
                     @close="handleClose(tag)"
                   >
@@ -461,6 +464,8 @@ function formatDate(date = new Date()) {
                       v-for="tag in pickTags"
                       :key="tag.id"
                       effect="light"
+                      :color="tag.color"
+                      :style="{ color: textColor(tag.color as string) }"
                       round
                       type="primary"
                     >

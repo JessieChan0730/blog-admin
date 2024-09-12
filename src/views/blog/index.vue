@@ -18,6 +18,7 @@ import { QueryParams } from "@/api/blog";
 import { CategoryAPI, CategoryVo } from "@/api/category";
 import { PaginationType, useGetPageSize } from "@/hooks/settings";
 import { showValidateErrorMessage } from "@/utils/error";
+import { textColor } from "@/utils/textcolor";
 
 const blogStore = useBlogStore();
 const userStore = useUserStore();
@@ -527,6 +528,8 @@ const reset = () => {
                         :key="tags.id"
                         type="primary"
                         effect="light"
+                        :color="tags.color"
+                        :style="{ color: textColor(tags.color as string) }"
                       >
                         {{ tags.name }}
                       </el-tag>

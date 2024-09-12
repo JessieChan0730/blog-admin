@@ -3,6 +3,7 @@ import { useBlogStore } from "@/store";
 import { ArticleAPI, BLogPreview } from "@/api/blog";
 import Editor from "@/components/WangEditor/index.vue";
 import { ref } from "vue";
+import { textColor } from "@/utils/textcolor";
 
 const route = useRoute();
 const blogStore = useBlogStore();
@@ -170,6 +171,8 @@ const cancel = () => {
               :key="tag.id"
               effect="light"
               round
+              :color="tag.color"
+              :style="{ color: textColor(tag.color as string) }"
               type="primary"
             >
               {{ tag.name }}

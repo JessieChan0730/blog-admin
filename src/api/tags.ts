@@ -19,6 +19,7 @@ export class TagsAPI {
       },
       data: {
         name: data.name,
+        color: data.color ? data.color : "#409EFF",
       },
     });
   }
@@ -32,6 +33,7 @@ export class TagsAPI {
       },
       data: {
         name: data.name,
+        color: data.color ? data.color : "#409EFF",
       },
     });
   }
@@ -67,9 +69,11 @@ export class TagsAPI {
 export interface TagsVO {
   id: number;
   name: string;
+  color?: string;
 }
 
 export interface TagsForm {
   id?: number;
   name: string;
+  color?: string;
 }

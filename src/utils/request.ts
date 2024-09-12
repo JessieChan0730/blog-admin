@@ -56,21 +56,21 @@ service.interceptors.response.use(
     if (error.response.data) {
       const { code, msg, exps } = error.response.data;
       if (code === ResultEnum.TOKEN_INVALID) {
+        ElNotification({
+          title: "提示",
+          message: exps.detail,
+          type: "info",
+        });
         useUserStoreHook()
           .resetToken()
           .then(() => {
             // location.reload();
-            ElNotification({
-              title: "提示",
-              message: exps.detail,
-              type: "info",
-            });
           });
+        return;
       } else if (code === ResultEnum.BAD_REQUEST) {
         const { exps } = error.response.data;
         // ElMessage.error(msg);
         showBadRequestErrorMessage(exps);
-        // TODO 处理 exps
         return;
       } else if (code === ResultEnum.ERROR) {
         ElMessage.error("服务器出错，请联系管理员");
