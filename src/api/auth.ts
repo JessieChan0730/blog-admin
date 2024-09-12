@@ -11,7 +11,7 @@ class AuthAPI {
       password: data.password,
     };
     return request<any, LoginResult>({
-      url: "/api/login",
+      url: "/api/auth/login",
       method: "post",
       data: data,
       headers: {
@@ -23,7 +23,7 @@ class AuthAPI {
   /** 注销 接口*/
   static logout() {
     return request({
-      url: "/api/logout",
+      url: "/api/auth/logout",
       method: "delete",
     });
   }
