@@ -71,6 +71,16 @@ const frontSetting = reactive<FrontSetting>(<FrontSetting>{
       value: "",
     },
   },
+  photo_wall: {
+    page_size: {
+      id: 0,
+      value: "",
+    },
+    max_page_size: {
+      id: 0,
+      value: "",
+    },
+  },
 });
 const uploadHeaders = reactive<Record<string, any>>({
   Authorization: localStorage.getItem(TOKEN_KEY),
@@ -296,6 +306,28 @@ const updateSetting = async (formEl: FormInstance | undefined) => {
                 <el-form-item label="博客最多推荐:">
                   <el-input-number
                     v-model="frontSetting.blog.recommend_max_num.value"
+                    :min="1"
+                  />
+                </el-form-item>
+              </el-form>
+            </template>
+          </el-card>
+
+          <el-card class="mb-1" shadow="never">
+            <template #header>
+              <span class="module-title">照片墙模块</span>
+            </template>
+            <template #default>
+              <el-form :model="frontSetting" label-position="left">
+                <el-form-item label="每页展示:" prop="name">
+                  <el-input-number
+                    v-model="frontSetting.photo_wall.page_size.value"
+                    :min="1"
+                  />
+                </el-form-item>
+                <el-form-item label="最大分页:" prop="name">
+                  <el-input-number
+                    v-model="frontSetting.photo_wall.max_page_size.value"
                     :min="1"
                   />
                 </el-form-item>

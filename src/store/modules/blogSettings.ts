@@ -56,7 +56,11 @@ export const useFrontSettings = defineStore("frontSetting", () => {
 
   function get() {
     return new Promise<FrontSetting>((resolve, reject) => {
-      if (localStorage.getItem(FRONT_SETTING_KEY)) {
+      if (
+        localStorage.getItem(FRONT_SETTING_KEY) &&
+        localStorage.getItem(FRONT_SETTING_KEY)?.trim() !== "" &&
+        localStorage.getItem(FRONT_SETTING_KEY)?.trim() !== "undefined"
+      ) {
         const frontSettingsObj = JSON.parse(
           localStorage.getItem(FRONT_SETTING_KEY) as string
         ) as FrontSetting;
@@ -160,7 +164,12 @@ export const useAdminSettings = defineStore("adminSetting", () => {
 
   function get() {
     return new Promise<AdminSetting>((resolve, reject) => {
-      if (localStorage.getItem(ADMIN_SETTING_KEY)) {
+      if (
+        localStorage.getItem(ADMIN_SETTING_KEY) &&
+        localStorage.getItem(ADMIN_SETTING_KEY)?.trim() !== "" &&
+        localStorage.getItem(ADMIN_SETTING_KEY)?.trim() !== "undefined"
+      ) {
+        console.log("成功");
         const adminSettingsObj = JSON.parse(
           localStorage.getItem(ADMIN_SETTING_KEY) as string
         ) as AdminSetting;
