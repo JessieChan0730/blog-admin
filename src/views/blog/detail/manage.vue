@@ -21,7 +21,7 @@ const blogStore = useBlogStore();
 // 对话框是否展示
 const dialogVisible = ref(false);
 // 封面上传的URL
-const coverUploadUrl = ref("http://127.0.0.1:8000/api/cover/");
+const coverUploadUrl = ref(`${import.meta.env.VITE_APP_BASE_API}/api/cover/`);
 // search 加载状态
 const loading = ref(false);
 // 分类

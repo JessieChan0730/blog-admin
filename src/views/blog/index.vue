@@ -110,7 +110,7 @@ const dialogFormVisible = ref(false);
 // 文件上传表单实例对象
 const upload = ref<UploadInstance>();
 // 头像上传地址
-const uploadUrl = ref("http://127.0.0.1:8000/api/user/change/");
+const uploadUrl = ref(`${import.meta.env.VITE_APP_BASE_API}/api/user/change/`);
 // 临时的状态
 const temp_search = ref("");
 const temp_category = ref();

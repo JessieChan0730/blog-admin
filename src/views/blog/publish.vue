@@ -17,7 +17,7 @@ const upload = ref<UploadInstance>();
 const maxStepSize = 3;
 const minStepSize = 1;
 // 封面上传的URL
-const coverUploadUrl = ref("http://127.0.0.1:8000/api/cover/");
+const coverUploadUrl = ref(`${import.meta.env.VITE_APP_BASE_API}/api/cover/`);
 // 当前的步骤数
 const activeStep = ref(1);
 // 选择的tag列表

@@ -88,7 +88,9 @@ const uploadHeaders = reactive<Record<string, any>>({
 
 const ruleFormRef = ref<FormInstance>();
 const frontSettingForms = ref<Setting[]>([]);
-const uploadUrl = ref("http://127.0.0.1:8000/api/settings/front/cover/");
+const uploadUrl = ref(
+  `${import.meta.env.VITE_APP_BASE_API}/api/settings/front/cover/`
+);
 const upload = ref<UploadInstance>();
 
 onMounted(async () => {
