@@ -25,7 +25,7 @@
     <el-dropdown class="setting-item" trigger="click">
       <div class="flex-center h100% p10px">
         <img
-          :src="userStore.user.avatar"
+          :src="`${static_url}/${userStore.user.avatar}`"
           class="rounded-full mr-10px w24px w24px"
         />
         <span>{{ userStore.user.nickname }}</span>
@@ -65,7 +65,7 @@ import {
 } from "@/store";
 import defaultSettings from "@/settings";
 import { DeviceEnum } from "@/enums/DeviceEnum";
-
+const static_url = import.meta.env.VITE_APP_STATIC_URL;
 const appStore = useAppStore();
 const tagsViewStore = useTagsViewStore();
 const userStore = useUserStore();

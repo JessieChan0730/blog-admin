@@ -47,7 +47,7 @@ const editorConfig = ref({
       // 自定义图片上传
       async customUpload(file: any, insertFn: any) {
         FileAPI.upload(file).then((data) => {
-          insertFn(data.image);
+          insertFn(`${import.meta.env.VITE_APP_STATIC_URL}/${data.image}`);
         });
       },
     },

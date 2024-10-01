@@ -8,7 +8,7 @@
           <div class="flex h-full items-center">
             <img
               class="w-20 h-20 mr-5 rounded-full"
-              :src="userStore.user.avatar"
+              :src="`${static_url}/${userStore.user.avatar}`"
             />
             <div>
               <p>{{ greetings }}</p>
@@ -117,7 +117,7 @@ import * as echarts from "echarts";
 import { SumUpAPI } from "@/api/sumup";
 
 const userStore = useUserStore();
-
+const static_url = import.meta.env.VITE_APP_STATIC_URL;
 const date: Date = new Date();
 const greetings = computed(() => {
   const hours = date.getHours();

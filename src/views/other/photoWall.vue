@@ -269,7 +269,7 @@ const reset = () => {
               :zoom-rate="1.2"
               :max-scale="7"
               :min-scale="0.2"
-              :preview-src-list="[scope.row.image]"
+              :preview-src-list="[`${static_url}/${scope.row.image}`]"
               :initial-index="4"
               :preview-teleported="true"
             />
