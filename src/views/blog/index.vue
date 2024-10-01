@@ -132,7 +132,7 @@ const getUserInfo = async () => {
   const response = await userStore.getUserInfo();
   if (response) {
     userInfo.nickname = response.nickname;
-    userInfo.avatar = response.avatar;
+    userInfo.avatar = `${import.meta.env.VITE_APP_STATIC_URL}/${response.avatar}`;
     userInfo.signature = response.signature;
     userInfo.more_info = response.more_info;
   }

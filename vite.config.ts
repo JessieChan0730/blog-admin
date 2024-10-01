@@ -68,6 +68,10 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
           rewrite: (path) =>
             path.replace(new RegExp("^" + env.VITE_APP_BASE_API), ""),
         },
+        [env.VITE_APP_STATIC_URL]: {
+          changeOrigin: true,
+          target: env.VITE_APP_API_URL,
+        },
       },
     },
     plugins: [

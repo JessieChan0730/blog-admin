@@ -144,7 +144,7 @@ const submitUpload = () => {
 const uploadSuccess = (response: any) => {
   if (response) {
     upload.value!.clearFiles();
-    frontSetting.website_cover.value = response.data.cover;
+    frontSetting.website_cover.value = `${import.meta.env.VITE_APP_STATIC_URL}/${response.data.cover}`;
     ElMessage.success("上传成功");
   }
 };

@@ -170,7 +170,7 @@ const uploadSuccess = (
   const { code, data } = response;
   if (code === 201) {
     const { cover } = data;
-    setting.cover_url = cover;
+    setting.cover_url = `${import.meta.env.VITE_APP_STATIC_URL}/${cover}`;
   } else {
     ElNotification({
       title: "错误",

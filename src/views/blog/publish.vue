@@ -224,7 +224,7 @@ const uploadSuccess = (response: any) => {
   const { code, data } = response;
   if (code === 201) {
     const { cover } = data;
-    blogForm.cover_url = cover;
+    blogForm.cover_url = `${import.meta.env.VITE_APP_STATIC_URL}/${cover}`;
   } else {
     ElNotification({
       title: "错误",

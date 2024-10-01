@@ -16,7 +16,7 @@ import {
 } from "element-plus";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 import { PaginationType, useGetPageSize } from "@/hooks/settings";
-
+const static_url = import.meta.env.VITE_APP_STATIC_URL;
 const search_content = ref("");
 const photo_ids = ref<number[]>([]);
 const pageSize = ref(5);
@@ -263,7 +263,7 @@ const reset = () => {
         >
           <template #default="scope">
             <el-image
-              :src="scope.row.image"
+              :src="`${static_url}/${scope.row.image}`"
               class="w-full h-4rem"
               fit="contain"
               :zoom-rate="1.2"

@@ -161,7 +161,7 @@ const submitUpload = () => {
 const uploadSuccess = (response: any) => {
   if (response) {
     upload.value!.clearFiles();
-    adminSetting.website_logo.value = response.data.logo;
+    adminSetting.website_logo.value = `${import.meta.env.VITE_APP_STATIC_URL}/${response.data.logo}`;
     ElMessage.success("上传成功");
   }
 };
