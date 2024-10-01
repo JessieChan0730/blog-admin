@@ -172,6 +172,9 @@ const deleteTags = async () => {
   if (ids.value.length !== 0) {
     await TagsAPI.deleteTags(ids.value);
     // 刷新当页数据
+    if (ids.value.length === tagsListPagination.results.length) {
+      currentPage.value = 1;
+    }
     await loadTagsData(currentPage.value);
   } else {
     ElMessage.error("请框选对应的链接");

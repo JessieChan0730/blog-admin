@@ -176,7 +176,12 @@ const deleteCategories = async () => {
   if (ids.value.length !== 0) {
     await CategoryAPI.deleteCategories(ids.value);
     // 手动刷新当页页面
-    await loadCategoryData(queryParams);
+    // 刷新当页数据
+    if (ids.value.length === categoryListPagination.results.length) {
+      queryParams.page = 1;
+    } else {
+      await loadCategoryData(queryParams);
+    }
   } else {
     ElMessage.error("请框选对应的链接");
   }

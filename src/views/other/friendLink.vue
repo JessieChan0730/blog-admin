@@ -284,7 +284,11 @@ const deleteLink = async (id: number | string) => {
 const deleteFriendLinks = async () => {
   if (ids.value.length !== 0) {
     await FriendLinkAPI.deleteMultipleLinks(ids.value as number[]);
-    await loadFriendLinks();
+    if (ids.value.length === friendLinkPagination.results.length) {
+      queryParams.page = 1;
+    } else {
+      await loadFriendLinks();
+    }
   } else {
     ElMessage.error("请框选对应的链接");
   }

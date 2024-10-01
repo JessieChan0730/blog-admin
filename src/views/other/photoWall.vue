@@ -178,7 +178,11 @@ const selectChange = (photos: PhotoWall[]) => {
 const deletePhotos = async () => {
   if (photo_ids.value.length !== 0) {
     await PhotoWallAPI.deleteMultiplePhotos(photo_ids.value);
-    await loadPhotos();
+    if (photo_ids.value.length === photoWallPagination.results.length) {
+      queryParams.page = 1;
+    } else {
+      await loadPhotos();
+    }
   } else {
     ElMessage.error("请框选对应的链接");
   }
