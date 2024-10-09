@@ -6,7 +6,8 @@
     <a href="https://gitee.com/youlaiorg" target="_blank">
         <img src="https://img.shields.io/badge/Author-有来开源组织-orange.svg"/>
     </a>
-    <div align="center"> 中文 | <a href="./README.en-US.md">English</div>
+
+[//]: # (    <div align="center"> 中文 | <a href="./README.en-US.md">English</div>)
 </div>
 
 
