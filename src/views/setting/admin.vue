@@ -82,6 +82,16 @@ const adminSetting = reactive<AdminSetting>(<AdminSetting>{
       value: "",
     },
   },
+  comments: {
+    page_size: {
+      id: 0,
+      value: "",
+    },
+    max_page_size: {
+      id: 0,
+      value: "",
+    },
+  },
 });
 
 const rules = reactive<FormRules<AdminSetting>>({
@@ -375,6 +385,27 @@ const updateSetting = async (formEl: FormInstance | undefined) => {
                 <el-form-item label="最大分页:" prop="name">
                   <el-input-number
                     v-model="adminSetting.photo_wall.max_page_size.value"
+                    :min="1"
+                  />
+                </el-form-item>
+              </el-form>
+            </template>
+          </el-card>
+          <el-card class="mb-1" shadow="never">
+            <template #header>
+              <span class="module-title">评论模块</span>
+            </template>
+            <template #default>
+              <el-form :model="adminSetting" label-position="left">
+                <el-form-item label="每页展示:" prop="name">
+                  <el-input-number
+                    v-model="adminSetting.comments.page_size.value"
+                    :min="1"
+                  />
+                </el-form-item>
+                <el-form-item label="最大分页:" prop="name">
+                  <el-input-number
+                    v-model="adminSetting.comments.max_page_size.value"
                     :min="1"
                   />
                 </el-form-item>

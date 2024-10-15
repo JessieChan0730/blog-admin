@@ -64,6 +64,7 @@ export interface AdminSetting {
   blog: PaginationSetting;
   friend_link: PaginationSetting;
   photo_wall: PaginationSetting;
+  comments: PaginationSetting;
 }
 
 export class AdminSettingsAPI {
