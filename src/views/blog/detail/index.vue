@@ -17,7 +17,6 @@ const paths = router.currentRoute.value.fullPath.split("/")[3];
         >
           <el-menu-item index="preview">预览</el-menu-item>
           <el-menu-item index="manage">管理</el-menu-item>
-          <el-menu-item index="3" disabled>评论</el-menu-item>
         </el-menu>
         <div class="view-container mt-4">
           <router-view />

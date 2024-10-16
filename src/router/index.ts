@@ -152,6 +152,16 @@ export const constantRoutes: RouteRecordRaw[] = [
           icon: "edit",
         },
       },
+      {
+        path: "comments",
+        name: "comments",
+        component: () => import("@/views/comments/index.vue"),
+        meta: {
+          title: "评论管理",
+          keepAlive: true,
+          icon: "edit",
+        },
+      },
     ],
   },
   {
