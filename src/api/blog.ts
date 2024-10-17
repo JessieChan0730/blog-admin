@@ -50,6 +50,13 @@ export class ArticleAPI {
       method: "delete",
     });
   }
+
+  static getArticleSelectedData() {
+    return request<any, BlogSelectedVo[]>({
+      url: `${ARTICLE_URL}/selected/`,
+      method: "get",
+    });
+  }
 }
 
 export interface QueryParams {
@@ -112,4 +119,9 @@ export interface BLogManage {
   visible: boolean;
   category: number;
   tags: TagsVO[];
+}
+
+export interface BlogSelectedVo {
+  id: number;
+  title: string;
 }

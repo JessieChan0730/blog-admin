@@ -1,9 +1,38 @@
 <script setup lang="ts">
 import { Delete, InfoFilled, Plus } from "@element-plus/icons-vue";
 import type { Pagination } from "@/api/pagination";
-import { CommentsAPI, CommentsVo } from "@/api/comments";
+import { CommentsAPI, CommentsForms, CommentsVo } from "@/api/comments";
 import router from "@/router";
 import { formatDate } from "@/utils";
+import { ArticleAPI, BlogSelectedVo } from "@/api/blog";
+import { FormInstance, FormRules } from "element-plus";
+
+enum DType {
+  RECOVER,
+  PUBLISH,
+  NUll,
+}
+
+interface CommentFormView {
+  article_name: string;
+  content: string;
+  nickname: string;
+}
+
+interface DialogInfo {
+  visible: boolean;
+  title: string;
+  type: DType;
+}
+const blogSelectedData = ref<BlogSelectedVo[]>([]);
+const ruleFormRef = ref<FormInstance>();
+
+const dialogInfo = reactive<DialogInfo>({
+  visible: false,
+  title: "",
+  type: DType.NUll,
+});
+
 const commentsListPagination = reactive<Pagination<CommentsVo>>({
   count: 1,
   next: "",
@@ -11,12 +40,44 @@ const commentsListPagination = reactive<Pagination<CommentsVo>>({
   results: [],
 });
 
+const commentsForm = reactive<CommentsForms>({
+  article_pk: null,
+  content: "",
+  parent_comment: null,
+});
+
+const rules = reactive<FormRules<CommentsForms>>({
+  content: [
+    { required: true, message: "请输入评论的内容", trigger: "blur" },
+    { min: 1, message: "最低长度为1个字符", trigger: "blur" },
+  ],
+  article_pk: [
+    {
+      required: true,
+      message: "请选择一篇文章",
+      trigger: "change",
+    },
+  ],
+});
+
+const commentsFormView = reactive<CommentFormView>({
+  article_name: "",
+  content: "",
+  nickname: "",
+});
+
 onMounted(async () => {
+  await loadComments();
+  const res_selected = await ArticleAPI.getArticleSelectedData();
+  res_selected && blogSelectedData.value.push(...res_selected);
+});
+
+const loadComments = async () => {
   const response = await CommentsAPI.getComments();
   if (response) {
     Object.assign(commentsListPagination, { ...response });
   }
-});
+};
 
 const reviewArticle = (id: number) => {
   router.push(`/blog/${id}`);
@@ -24,6 +85,84 @@ const reviewArticle = (id: number) => {
 
 const changeVisible = (notification: boolean) => {
   console.log(notification);
+};
+
+const deleteComments = async (id: string | number) => {
+  await CommentsAPI.deleteComments(id);
+  await loadComments();
+};
+
+// 展示dialog
+const showDialog = (type: DType, row?: any) => {
+  if (type == DType.RECOVER) {
+    dialogInfo.title = "回复用户";
+    commentsFormView.article_name = row.article_name;
+    commentsFormView.content = row.content;
+    commentsFormView.nickname = row.nickname;
+    commentsForm.parent_comment = row.id;
+    commentsForm.article_pk = row.article_pk;
+    // 初始化dialog中编辑框的内容
+  } else if (type == DType.PUBLISH) {
+    dialogInfo.title = "发布评论";
+    commentsForm.parent_comment = null;
+  }
+  dialogInfo.type = type;
+  dialogInfo.visible = true;
+};
+
+// 关闭对话框
+const closeDialog = () => {
+  dialogInfo.visible = false;
+  commentsFormView.article_name = "";
+  commentsFormView.content = "";
+  commentsFormView.nickname = "";
+  commentsForm.parent_comment = null;
+  commentsForm.article_pk = null;
+  commentsForm.content = "";
+};
+
+// 提交表单
+const commit = async (formEl: FormInstance | undefined) => {
+  if (dialogInfo.type == DType.RECOVER) {
+    if (commentsForm.content.trim() !== "") {
+      const response = await CommentsAPI.publishComments(commentsForm);
+      if (response) {
+        await loadComments();
+        ElNotification({
+          title: "成功",
+          message: "回复成功",
+          type: "success",
+        });
+        closeDialog();
+      }
+    } else {
+      ElMessage.error("请按照表单规则提交");
+    }
+  } else if (dialogInfo.type == DType.PUBLISH) {
+    if (!formEl) return;
+    await formEl.validate(async (valid, fields) => {
+      if (valid) {
+        const response = await CommentsAPI.publishComments(commentsForm);
+        if (response) {
+          await loadComments();
+          ElNotification({
+            title: "成功",
+            message: "回复成功",
+            type: "success",
+          });
+          closeDialog();
+        }
+      } else {
+        ElMessage.error("请按照表单规则提交");
+      }
+    });
+  } else {
+    ElNotification({
+      title: "错误",
+      message: "系统错误",
+      type: "error",
+    });
+  }
 };
 </script>
 
@@ -33,15 +172,25 @@ const changeVisible = (notification: boolean) => {
       <el-form ref="queryFormRef" :inline="true">
         <el-form-item label="所属文章" prop="region">
           <el-select placeholder="请选择的相关的文章">
-            <el-option label="hell world" value="world" />
-            <el-option label="Zone two" value="beijing" />
+            <el-option
+              v-for="selected in blogSelectedData"
+              :key="selected.id"
+              :label="selected.title"
+              :value="selected.id"
+            />
           </el-select>
         </el-form-item>
       </el-form>
     </div>
     <el-card shadow="never" class="table-container">
       <template #header>
-        <el-button type="success" :icon="Plus">评论</el-button>
+        <el-button
+          type="success"
+          :icon="Plus"
+          @click="showDialog(DType.PUBLISH)"
+        >
+          评论
+        </el-button>
         <el-popconfirm
           confirm-button-text="确认"
           cancel-button-text="取消"
@@ -162,7 +311,7 @@ const changeVisible = (notification: boolean) => {
             <el-button
               size="small"
               type="primary"
-              @click="showDialog(DType.Edit, prop.row)"
+              @click="showDialog(DType.RECOVER, prop.row)"
             >
               回复
             </el-button>
@@ -174,7 +323,7 @@ const changeVisible = (notification: boolean) => {
               title="你确定要删除这个标签吗？"
               width="220"
               confirm-button-type="danger"
-              @confirm="deleteCategory(prop.row.id)"
+              @confirm="deleteComments(prop.row.id)"
             >
               <template #reference>
                 <el-button size="small" type="danger">删除</el-button>
@@ -185,6 +334,72 @@ const changeVisible = (notification: boolean) => {
       </el-table>
       <template #footer></template>
     </el-card>
+    <!--Dialog-->
+    <el-dialog
+      @close="closeDialog"
+      v-model="dialogInfo.visible"
+      :title="dialogInfo.title"
+      width="500"
+    >
+      <el-form
+        v-if="dialogInfo.type === DType.RECOVER"
+        label-position="top"
+        :model="commentsForm"
+        :rules="rules"
+      >
+        <el-form-item label="文章名">
+          <el-input v-model="commentsFormView.article_name" disabled />
+        </el-form-item>
+        <el-form-item label="昵称">
+          <el-input v-model="commentsFormView.nickname" disabled />
+        </el-form-item>
+        <el-form-item label="评论内容">
+          <el-input v-model="commentsFormView.content" disabled />
+        </el-form-item>
+        <el-form-item label="回复评论" prop="content">
+          <el-input
+            v-model="commentsForm.content"
+            type="textarea"
+            placeholder="请填写您回复的内容"
+          />
+        </el-form-item>
+      </el-form>
+      <el-form
+        :model="commentsForm"
+        v-else-if="dialogInfo.type === DType.PUBLISH"
+        ref="ruleFormRef"
+        :rules="rules"
+      >
+        <el-form-item label="选择文章" prop="article_pk">
+          <el-select
+            v-model="commentsForm.article_pk"
+            placeholder="请选择您对应的文章"
+          >
+            <el-option
+              v-for="selected in blogSelectedData"
+              :key="selected.id"
+              :label="selected.title"
+              :value="selected.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="回复评论" prop="content">
+          <el-input
+            v-model="commentsForm.content"
+            type="textarea"
+            placeholder="请填写您评论的内容"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="closeDialog">取消</el-button>
+          <el-button type="primary" @click="commit(ruleFormRef)">
+            确定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
