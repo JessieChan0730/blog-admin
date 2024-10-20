@@ -5,6 +5,7 @@ export enum PaginationType {
   Blog = "blog",
   FriendLink = "friend_link",
   PhotoWall = "photo_wall",
+  Comments = "comments",
 }
 export async function useGetPageSize(type: PaginationType) {
   const adminSettingStore = useAdminSettings();

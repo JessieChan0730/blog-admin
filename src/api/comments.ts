@@ -2,11 +2,13 @@ import request from "@/utils/request";
 import { Pagination } from "@/api/pagination";
 
 const COMMENTS_URL = "/api/comments";
+
 export class CommentsAPI {
-  static getComments() {
+  static getComments(params?: CommentsParams) {
     return request<any, Pagination<CommentsVo>>({
       url: `${COMMENTS_URL}/`,
       method: "get",
+      params,
     });
   }
 
@@ -25,6 +27,19 @@ export class CommentsAPI {
         "Content-Type": "application/json",
       },
       data: form,
+    });
+  }
+
+  static deleteMultipleComments(ids: number[]) {
+    return request<any, null>({
+      url: `${COMMENTS_URL}/multiple/`,
+      method: "delete",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: {
+        ids,
+      },
     });
   }
 }
@@ -47,4 +62,9 @@ export interface CommentsForms {
   article_pk: number | null;
   content: string;
   parent_comment: number | null;
+}
+
+export interface CommentsParams {
+  page?: number;
+  article_pk?: number | null;
 }

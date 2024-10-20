@@ -160,6 +160,16 @@ export const useAdminSettings = defineStore("adminSetting", () => {
         value: "",
       },
     },
+    comments: {
+      page_size: {
+        id: 0,
+        value: "",
+      },
+      max_page_size: {
+        id: 0,
+        value: "",
+      },
+    },
   });
 
   function get() {
@@ -169,7 +179,6 @@ export const useAdminSettings = defineStore("adminSetting", () => {
         localStorage.getItem(ADMIN_SETTING_KEY)?.trim() !== "" &&
         localStorage.getItem(ADMIN_SETTING_KEY)?.trim() !== "undefined"
       ) {
-        console.log("成功");
         const adminSettingsObj = JSON.parse(
           localStorage.getItem(ADMIN_SETTING_KEY) as string
         ) as AdminSetting;

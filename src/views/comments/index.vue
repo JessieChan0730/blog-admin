@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { Delete, InfoFilled, Plus } from "@element-plus/icons-vue";
 import type { Pagination } from "@/api/pagination";
-import { CommentsAPI, CommentsForms, CommentsVo } from "@/api/comments";
+import {
+  CommentsAPI,
+  CommentsForms,
+  CommentsParams,
+  CommentsVo,
+} from "@/api/comments";
 import router from "@/router";
 import { formatDate } from "@/utils";
 import { ArticleAPI, BlogSelectedVo } from "@/api/blog";
 import { FormInstance, FormRules } from "element-plus";
-
+import { PaginationType, useGetPageSize } from "@/hooks/settings";
 enum DType {
   RECOVER,
   PUBLISH,
@@ -24,9 +29,16 @@ interface DialogInfo {
   title: string;
   type: DType;
 }
+
+// 分页组件状态
+const pageSize = ref(0);
+const disabled = ref(false);
+const background = ref(true);
 const blogSelectedData = ref<BlogSelectedVo[]>([]);
 const ruleFormRef = ref<FormInstance>();
-
+// 加载动画
+const loading = ref(false);
+const selectComments = ref<CommentsVo[]>([]);
 const dialogInfo = reactive<DialogInfo>({
   visible: false,
   title: "",
@@ -66,14 +78,38 @@ const commentsFormView = reactive<CommentFormView>({
   nickname: "",
 });
 
+const queryParams = reactive<CommentsParams>({
+  page: 1,
+  article_pk: null,
+});
+
+// 拆分 queryParams，并且交给监听器处理
+const article_pk = toRef(queryParams, "article_pk");
+const page = toRef(queryParams, "page");
+
 onMounted(async () => {
-  await loadComments();
+  await loadComments({ page: 1 });
+  pageSize.value = await useGetPageSize(PaginationType.Category);
   const res_selected = await ArticleAPI.getArticleSelectedData();
   res_selected && blogSelectedData.value.push(...res_selected);
 });
 
-const loadComments = async () => {
-  const response = await CommentsAPI.getComments();
+// 计算属性
+const ids = computed(() => {
+  return selectComments.value.map((comments) => {
+    return comments.id;
+  });
+});
+
+// 监听器
+watch([article_pk, page], async () => {
+  loading.value = true;
+  await loadComments(queryParams);
+  loading.value = false;
+});
+
+const loadComments = async (params?: CommentsParams) => {
+  const response = await CommentsAPI.getComments(params);
   if (response) {
     Object.assign(commentsListPagination, { ...response });
   }
@@ -89,7 +125,11 @@ const changeVisible = (notification: boolean) => {
 
 const deleteComments = async (id: string | number) => {
   await CommentsAPI.deleteComments(id);
-  await loadComments();
+  if (commentsListPagination.results.length === 1) {
+    page.value = 1;
+  } else {
+    await loadComments(queryParams);
+  }
 };
 
 // 展示dialog
@@ -108,6 +148,11 @@ const showDialog = (type: DType, row?: any) => {
   }
   dialogInfo.type = type;
   dialogInfo.visible = true;
+};
+// 选择文章
+const changeSelected = (value: number) => {
+  queryParams.article_pk = value;
+  queryParams.page = 1;
 };
 
 // 关闭对话框
@@ -164,14 +209,51 @@ const commit = async (formEl: FormInstance | undefined) => {
     });
   }
 };
+
+const handleCurrentChange = (currentPage: number) => {
+  page.value = currentPage;
+};
+
+const handleSizeChange = (val: number) => {
+  console.log(`${val} items per page`);
+};
+
+const reset = () => {
+  article_pk.value = null;
+  page.value = 1;
+};
+
+const deleteMultipleComments = async () => {
+  if (ids.value.length !== 0) {
+    await CommentsAPI.deleteMultipleComments(ids.value);
+    // 手动刷新当页页面
+    // 刷新当页数据
+    if (ids.value.length === commentsListPagination.results.length) {
+      queryParams.page = 1;
+    } else {
+      await loadComments(queryParams);
+    }
+  } else {
+    ElMessage.error("请框选对应的链接");
+  }
+};
+
+const selectChange = (newSelection: CommentsVo[]) => {
+  selectComments.value = newSelection;
+};
 </script>
 
 <template>
   <div class="app-container">
     <div class="search-container">
-      <el-form ref="queryFormRef" :inline="true">
-        <el-form-item label="所属文章" prop="region">
-          <el-select placeholder="请选择的相关的文章">
+      <el-form :inline="true">
+        <el-form-item
+          label="所属文章"
+          prop="region"
+          label-position="left"
+          class="w-15rem"
+        >
+          <el-select placeholder="请选择的相关的文章" @change="changeSelected">
             <el-option
               v-for="selected in blogSelectedData"
               :key="selected.id"
@@ -179,6 +261,12 @@ const commit = async (formEl: FormInstance | undefined) => {
               :value="selected.id"
             />
           </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="reset">
+            <i-ep-refresh />
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -199,7 +287,7 @@ const commit = async (formEl: FormInstance | undefined) => {
           title="你确定要删除这些标签吗？"
           width="220"
           confirm-button-type="danger"
-          @confirm="deleteCategories"
+          @confirm="deleteMultipleComments"
         >
           <template #reference>
             <el-button type="danger" :icon="Delete">删除</el-button>
@@ -213,6 +301,7 @@ const commit = async (formEl: FormInstance | undefined) => {
         stripe
         :data="commentsListPagination.results"
         :tree-props="{ children: 'reply_comments' }"
+        @selection-change="selectChange"
       >
         <el-table-column align="center" type="selection" width="55" />
         <el-table-column
@@ -332,7 +421,19 @@ const commit = async (formEl: FormInstance | undefined) => {
           </template>
         </el-table-column>
       </el-table>
-      <template #footer></template>
+      <template #footer>
+        <el-pagination
+          :default-page-size="pageSize"
+          v-model:current-page="queryParams.page"
+          :page-size="pageSize"
+          :total="commentsListPagination.count"
+          :disabled="disabled"
+          :background="background"
+          layout="total, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </template>
     </el-card>
     <!--Dialog-->
     <el-dialog
