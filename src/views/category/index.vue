@@ -183,7 +183,7 @@ const deleteCategories = async () => {
       await loadCategoryData(queryParams);
     }
   } else {
-    ElMessage.error("请框选对应的链接");
+    ElMessage.error("请框选对应的分类");
   }
 };
 // 搜索

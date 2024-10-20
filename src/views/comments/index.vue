@@ -234,7 +234,7 @@ const deleteMultipleComments = async () => {
       await loadComments(queryParams);
     }
   } else {
-    ElMessage.error("请框选对应的链接");
+    ElMessage.error("请框选对应的评论");
   }
 };
 

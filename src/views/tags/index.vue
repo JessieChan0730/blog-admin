@@ -177,7 +177,7 @@ const deleteTags = async () => {
     }
     await loadTagsData(currentPage.value);
   } else {
-    ElMessage.error("请框选对应的链接");
+    ElMessage.error("请框选对应的标签");
   }
 };
 
