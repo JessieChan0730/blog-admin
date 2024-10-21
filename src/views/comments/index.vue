@@ -119,8 +119,13 @@ const reviewArticle = (id: number) => {
   router.push(`/blog/${id}`);
 };
 
-const changeVisible = (notification: boolean) => {
-  console.log(notification);
+const changeVisible = async (row: CommentsVo) => {
+  const { id, notification } = row;
+  const response = await CommentsAPI.subscribeComments(id, notification);
+  if (response) {
+    let message = response.notification ? "订阅成功" : "取消订阅成功";
+    ElMessage.success(message);
+  }
 };
 
 const deleteComments = async (id: string | number) => {

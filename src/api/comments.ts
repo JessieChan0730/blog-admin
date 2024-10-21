@@ -42,6 +42,16 @@ export class CommentsAPI {
       },
     });
   }
+
+  static subscribeComments(id: number, notification: boolean) {
+    return request<any, SubscribeResult>({
+      url: `${COMMENTS_URL}/${id}/subscribe/`,
+      method: "put",
+      data: {
+        notification,
+      },
+    });
+  }
 }
 
 export interface CommentsVo {
@@ -67,4 +77,7 @@ export interface CommentsForms {
 export interface CommentsParams {
   page?: number;
   article_pk?: number | null;
+}
+export interface SubscribeResult {
+  notification: boolean;
 }
