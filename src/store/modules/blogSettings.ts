@@ -52,6 +52,26 @@ export const useFrontSettings = defineStore("frontSetting", () => {
         value: "",
       },
     },
+    photo_wall: {
+      page_size: {
+        id: 0,
+        value: "",
+      },
+      max_page_size: {
+        id: 0,
+        value: "",
+      },
+    },
+    comments: {
+      page_size: {
+        id: 0,
+        value: "",
+      },
+      max_page_size: {
+        id: 0,
+        value: "",
+      },
+    },
   });
 
   function get() {

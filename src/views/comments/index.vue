@@ -29,7 +29,7 @@ interface DialogInfo {
   title: string;
   type: DType;
 }
-
+const selectArticleId = ref<number | null>(null);
 // 分页组件状态
 const pageSize = ref(0);
 const disabled = ref(false);
@@ -224,6 +224,7 @@ const handleSizeChange = (val: number) => {
 };
 
 const reset = () => {
+  selectArticleId.value = null;
   article_pk.value = null;
   page.value = 1;
 };
@@ -258,7 +259,11 @@ const selectChange = (newSelection: CommentsVo[]) => {
           label-position="left"
           class="w-15rem"
         >
-          <el-select placeholder="请选择的相关的文章" @change="changeSelected">
+          <el-select
+            placeholder="请选择的相关的文章"
+            @change="changeSelected"
+            v-model="selectArticleId"
+          >
             <el-option
               v-for="selected in blogSelectedData"
               :key="selected.id"

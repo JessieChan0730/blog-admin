@@ -81,6 +81,16 @@ const frontSetting = reactive<FrontSetting>(<FrontSetting>{
       value: "",
     },
   },
+  comments: {
+    page_size: {
+      id: 0,
+      value: "",
+    },
+    max_page_size: {
+      id: 0,
+      value: "",
+    },
+  },
 });
 const uploadHeaders = reactive<Record<string, any>>({
   Authorization: localStorage.getItem(TOKEN_KEY),
@@ -330,6 +340,28 @@ const updateSetting = async (formEl: FormInstance | undefined) => {
                 <el-form-item label="最大分页:" prop="name">
                   <el-input-number
                     v-model="frontSetting.photo_wall.max_page_size.value"
+                    :min="1"
+                  />
+                </el-form-item>
+              </el-form>
+            </template>
+          </el-card>
+
+          <el-card class="mb-1" shadow="never">
+            <template #header>
+              <span class="module-title">评论模块</span>
+            </template>
+            <template #default>
+              <el-form :model="frontSetting" label-position="left">
+                <el-form-item label="每页展示:">
+                  <el-input-number
+                    v-model="frontSetting.comments.page_size.value"
+                    :min="1"
+                  />
+                </el-form-item>
+                <el-form-item label="最大分页:">
+                  <el-input-number
+                    v-model="frontSetting.comments.max_page_size.value"
                     :min="1"
                   />
                 </el-form-item>

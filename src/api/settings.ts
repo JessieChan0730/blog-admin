@@ -35,6 +35,7 @@ export interface FrontSetting {
   tags: FrontTagsSettings;
   blog: FrontBlogSettings;
   photo_wall: PaginationSetting;
+  comments: PaginationSetting;
 }
 // TODO 相同的逻辑是否可以封装
 export class FrontSettingsAPI {
