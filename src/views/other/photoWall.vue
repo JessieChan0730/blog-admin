@@ -16,6 +16,7 @@ import {
 } from "element-plus";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 import { PaginationType, useGetPageSize } from "@/hooks/settings";
+
 const static_url = import.meta.env.VITE_APP_STATIC_URL;
 const search_content = ref("");
 const photo_ids = ref<number[]>([]);
@@ -97,6 +98,8 @@ const showDialog = (type: DType, row?: any) => {
 };
 
 const closeDrawer = () => {
+  // 清空状态
+  upload.value!.clearFiles();
   drawerInfo.visible = false;
   photoForm.description = "";
   delete photoForm.id;
@@ -123,6 +126,7 @@ const handleExceed: UploadProps["onExceed"] = (files) => {
 
 const buildRequest = (options: UploadRequestOptions) => {
   photoForm.image = options.file;
+  // 返回一个成功的结果
   return Promise.resolve(options.file);
 };
 
@@ -137,6 +141,8 @@ const commit = async () => {
       photoWallPagination.results.push(result);
     }
     photoWallPagination.count++;
+    // 上传成功清除文件列表
+    upload.value!.clearFiles();
     ElMessage.success("上传成功");
   } else if (drawerInfo.type == DType.Edit) {
     const result = await PhotoWallAPI.updatePhoto(photoForm.id as number, {
