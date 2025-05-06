@@ -99,7 +99,7 @@ const showDialog = (type: DType, row?: any) => {
 
 const closeDrawer = () => {
   // 清空状态
-  upload.value!.clearFiles();
+  upload.value?.clearFiles();
   drawerInfo.visible = false;
   photoForm.description = "";
   delete photoForm.id;
