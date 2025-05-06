@@ -1,20 +1,27 @@
 <script setup lang="ts">
-import { Edit, Picture, Upload } from "@element-plus/icons-vue";
+import { ChatRound, Edit, Picture, Upload } from "@element-plus/icons-vue";
 import { ref } from "vue";
-import { genFileId, UploadFile, UploadFiles } from "element-plus";
-import type { UploadInstance, UploadProps, UploadRawFile } from "element-plus";
+import {
+  ElLoading,
+  UploadInstance,
+  UploadProps,
+  UploadRawFile,
+} from "element-plus";
+import { genFileId } from "element-plus";
 import { CategoryAPI, CategoryVo } from "@/api/category";
 import { TagsAPI, TagsVO } from "@/api/tags";
-import { ArticleAPI, BlogForm } from "@/api/blog";
+import { ArticleAPI, BlogForm, ReviewResult } from "@/api/blog";
 import Editor from "@/components/WangEditor/index.vue";
 import { TOKEN_KEY } from "@/enums/CacheEnum";
 import { useFrontSettings } from "@/store";
 import { textColor } from "@/utils/textcolor";
-
+import DeepSeekIcon from "@/assets/images/deepseek-icon.png";
+import type { LoadingInstance } from "element-plus/es/components/loading/src/loading";
+import "element-plus/theme-chalk/el-loading.css";
 const frontSettingStore = useFrontSettings();
 
 const upload = ref<UploadInstance>();
-const maxStepSize = 3;
+const maxStepSize = 4;
 const minStepSize = 1;
 // 封面上传的URL
 const coverUploadUrl = ref(`${import.meta.env.VITE_APP_BASE_API}/api/cover/`);
@@ -172,6 +179,54 @@ const pre = () => {
     activeStep.value--;
   }
 };
+// step3Ref 实例
+const step3Ref = ref();
+// element plus loading 组件实例
+let loadingInstance: LoadingInstance | null = null;
+const aiReviewResults = ref<ReviewResult[]>([]);
+// 显示加载动画
+const showLoading = () => {
+  if (step3Ref.value) {
+    loadingInstance = ElLoading.service({
+      target: step3Ref.value,
+      lock: true,
+      text: "审核中...",
+      background: "rgba(255, 255, 255, 0.8)",
+    });
+  }
+};
+// 隐藏加载动画
+const hideLoading = () => {
+  if (loadingInstance) {
+    loadingInstance.close();
+    loadingInstance = null;
+  }
+};
+
+// AI审核
+const reviewByAI = async () => {
+  if (blogForm.title && blogForm.content) {
+    showLoading();
+    try {
+      aiReviewResults.value = await ArticleAPI.reviewBlog({
+        title: blogForm.title,
+        content: blogForm.content,
+      });
+      console.log(aiReviewResults.value);
+    } catch (e) {
+      ElMessage.error(`网络错误：${e}`);
+    } finally {
+      hideLoading();
+    }
+  } else {
+    ElMessage.error("标题或内容未填写");
+  }
+};
+
+const backToEdit = () => {
+  activeStep.value = 2;
+  aiReviewResults.value = [];
+};
 
 const searchTag = async (name: string) => {
   if (name) {
@@ -264,6 +319,7 @@ const publish = async () => {
     });
   }
 };
+
 // 获取当前格式化数据
 function formatDate(date = new Date()) {
   let year = date.getFullYear();
@@ -284,6 +340,7 @@ function formatDate(date = new Date()) {
         <el-steps simple :active="activeStep">
           <el-step title="基础信息" :icon="Picture" />
           <el-step title="编写正文" :icon="Edit" />
+          <el-step title="AI审核" :icon="ChatRound" />
           <el-step title="上传" :icon="Upload" />
         </el-steps>
       </template>
@@ -435,7 +492,46 @@ function formatDate(date = new Date()) {
             </el-form-item>
           </el-form>
         </div>
-        <div class="step3" v-show="activeStep === 3">
+        <div class="step3" v-show="activeStep === 3" ref="step3Ref">
+          <!--模型列表，目前只支持deep seek-->
+          <div v-if="aiReviewResults.length === 0">
+            <div class="mb-[20px]">请选择模型：</div>
+            <div class="flex flex-row justify-center">
+              <div
+                class="model-item shadow-lg pb-[16px] border-[2px] border-solid border-[#409EFF] rounded-md"
+              >
+                <div class="flex justify-end">
+                  <el-checkbox :value="true" checked disabled />
+                </div>
+                <div class="px-[20px]">
+                  <img :src="DeepSeekIcon" class="w-[100px] mb-[15px]" />
+                  <div class="text-center">DeepSeek</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--审核结果列表-->
+          <div v-else class="flex flex-col items-start gap-10px">
+            <div class="mb-[20px]">审核结果：</div>
+            <div
+              class="w-full"
+              v-for="(aiReviewResult, index) in aiReviewResults"
+              :key="index"
+            >
+              <div class="mb-6px text-size-14px text-[#666]">
+                原文内容：“{{ aiReviewResult.original }}”
+              </div>
+              <el-alert
+                :title="aiReviewResult.suggest"
+                :type="aiReviewResult.type"
+                effect="dark"
+                show-icon
+                :closable="false"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="step5" v-show="activeStep === 4">
           <div
             class="review"
             v-if="blogForm.title !== '' && blogForm.content !== ''"
@@ -493,8 +589,22 @@ function formatDate(date = new Date()) {
       </template>
       <template #footer>
         <div class="btn-group flex flex-row justify-end">
-          <el-button @click="pre">上一步</el-button>
-          <el-button type="primary" v-if="activeStep != 3" @click="next">
+          <el-button v-show="activeStep !== 1" @click="pre">上一步</el-button>
+          <el-button
+            type="primary"
+            v-if="activeStep === 3 && aiReviewResults.length === 0"
+            @click="reviewByAI"
+          >
+            提交审核
+          </el-button>
+          <el-button
+            type="primary"
+            v-if="activeStep === 3 && aiReviewResults.length !== 0"
+            @click="backToEdit"
+          >
+            继续修改原文
+          </el-button>
+          <el-button type="primary" v-if="activeStep !== 4" @click="next">
             下一步
           </el-button>
           <el-button type="primary" v-else @click="publish">上传</el-button>
@@ -504,4 +614,14 @@ function formatDate(date = new Date()) {
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped>
+::v-deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
+  color: white;
+  background-color: #409eff; /* 背景变绿 */
+  border-color: #409eff; /* 边框变绿 */
+}
+
+::v-deep(.el-checkbox__input.is-disabled.is-checked .el-checkbox__inner::after) {
+  border-color: white;
+}
+</style>

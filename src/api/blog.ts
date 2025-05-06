@@ -57,6 +57,28 @@ export class ArticleAPI {
       method: "get",
     });
   }
+
+  static reviewBlog(data: ReviewParams) {
+    return request<any, ReviewResult[]>({
+      url: `${ARTICLE_URL}/review`,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "post",
+      data,
+    });
+  }
+}
+
+export interface ReviewParams {
+  title: string;
+  content: string;
+}
+
+export interface ReviewResult {
+  type: "error" | "warning";
+  original: string;
+  suggest: string;
 }
 
 export interface QueryParams {

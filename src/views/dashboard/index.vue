@@ -169,7 +169,7 @@ const initContributeDate = (data: any) => {
       left: 30,
       right: 30,
       cellSize: ["auto", 13],
-      range: "2024",
+      range: "2025",
       itemStyle: {
         borderWidth: 0.5,
       },
@@ -240,7 +240,7 @@ const initCategoryPie = (data: any) => {
 onMounted(async () => {
   const response = await SumUpAPI.getAllSumUpInfo();
   await useUserStore().getUserInfo();
-  initContributeDate(response.articles_per_day);
+  initContributeDate([["2025-02-10", 10]]);
   initCategoryPie(response.category_per_name);
   statisticData.value[0].value = response.article_num;
   tagsList.value = response.tags;
